@@ -80,7 +80,6 @@ function VisitorMap() {
       }
 
       const maplibregl = (await import('maplibre-gl')).default;
-      // @ts-expect-error css import
       await import('maplibre-gl/dist/maplibre-gl.css');
 
       const lat = stored?.lat ?? 39.9;
