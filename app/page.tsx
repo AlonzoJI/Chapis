@@ -314,7 +314,7 @@ export default function Home() {
                 <div className="item-body">
                   <div className="item-header">
                     <span className="item-name">{e.program}</span>
-                    <span className="item-year">{e.year}</span>
+                    <span className="item-year">{e.year.split(' ').pop()}</span>
                   </div>
                   <span className="item-role">{e.name}</span>
                 </div>
