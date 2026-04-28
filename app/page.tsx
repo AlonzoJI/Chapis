@@ -19,6 +19,19 @@ const involvement = [
   { logo: '/logos/horatio_alger_association_logo.jpeg', name: 'Horatio Alger Association', year: '2022–Present', role: 'State Scholar' },
 ];
 
+const programs = [
+  { logo: '/logos/bloomberg_logo.jpeg', name: 'Bloomberg', program: 'Decoded: Data at Bloomberg', year: 'Jul–Aug 2025' },
+  { logo: '/logos/deloitte_logo.jpeg', name: 'Deloitte', program: 'Leadership Allyship & Mentorship Program', year: 'Mar–Jul 2025' },
+  { logo: '/logos/uber_logo.jpeg', name: 'Uber', program: 'Career Prep Fellowship', year: 'Feb–Sep 2024' },
+  { logo: '/logos/procter_and_gamble_logo.jpeg', name: 'Procter & Gamble', program: 'Standout Emerging Leaders Camp', year: 'Aug 2024' },
+  { logo: '/logos/nvidia_logo.jpeg', name: 'NVIDIA', program: 'Summer Bridge Program', year: 'May–Aug 2024' },
+  { logo: '/logos/rsm_logo.jpeg', name: 'RSM US LLP', program: 'RSM Excellence Academy', year: 'Jul 2024' },
+  { logo: '/logos/accenture_logo.jpeg', name: 'Accenture', program: 'Elevate to Innovate Externship', year: 'May 2024' },
+  { logo: '/logos/capital_one_logo.jpeg', name: 'Capital One', program: 'First-Gen Focus', year: 'Jan–Jun 2024' },
+  { logo: '/logos/hrt_logo.jpeg', name: 'Hudson River Trading', program: 'Inside HRT', year: 'Apr 2024' },
+  { logo: '/logos/google_logo.jpeg', name: 'Google', program: 'Latinx Student Leadership Summit', year: 'Apr 2024' },
+];
+
 const projects = [
   { name: 'Project One', desc: 'A short description of what this project does and what problem it solves.' },
   { name: 'Project Two', desc: 'A short description of what this project does and what problem it solves.' },
@@ -239,6 +252,7 @@ export default function Home() {
           <ul>
             <li><a href="#experience">Experience</a></li>
             <li><a href="#involvement">Involvement</a></li>
+            <li><a href="#programs">Programs</a></li>
             <li><a href="#projects">Projects</a></li>
             <li><a href="#blog">Blog</a></li>
           </ul>
@@ -285,6 +299,24 @@ export default function Home() {
                     <span className="item-year">{e.year}</span>
                   </div>
                   <span className="item-role">{e.role}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="programs">
+          <h2>Professional Development</h2>
+          <div>
+            {programs.map((e, i) => (
+              <div key={i} className="item">
+                <div className="item-logo"><img src={e.logo} alt={e.name} /></div>
+                <div className="item-body">
+                  <div className="item-header">
+                    <span className="item-name">{e.program}</span>
+                    <span className="item-year">{e.year}</span>
+                  </div>
+                  <span className="item-role">{e.name}</span>
                 </div>
               </div>
             ))}
