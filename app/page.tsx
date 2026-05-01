@@ -15,7 +15,7 @@ const involvement = [
   { logo: '/logos/mlt_logo.jpeg', name: 'Management Leadership for Tomorrow', year: '2024–Present', role: '2027 Career Prep Fellow' },
   { logo: '/logos/seousa_logo.jpeg', name: 'Sponsors for Educational Opportunity', year: '2025', role: 'Tech Developer' },
   { logo: '/logos/colorstack_logo.jpeg', name: 'ColorStack', year: '2023–Present', role: 'Member' },
-  { logo: '/logos/bill__melinda_gates_foundation_logo.jpeg', name: 'Gates Millennium Scholars Program', year: '2023–Present', role: 'Gates Scholar' },
+  { logo: '/logos/bill__melinda_gates_foundation_logo.jpeg', name: 'Gates Foundation', year: '2023–Present', role: 'Gates Scholar' },
   { logo: '/logos/horatio_alger_association_logo.jpeg', name: 'Horatio Alger Association', year: '2022–Present', role: 'State Scholar' },
 ];
 
