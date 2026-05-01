@@ -56,7 +56,7 @@ const projects = [
   {
     name: 'NetPay',
     desc: 'A Ruby on Rails app for splitting group trip expenses. Users create trips, add participants and expenses, and get an automatic settlement strategy showing exactly who owes whom.',
-    link: 'https://github.com/AlonzoJI/NetPay'
+    link: 'https://github.com/cse3901-osu-2026sp-910/hexcode_final_project'
   },
   {
     name: 'Curriculum Visualization',
@@ -289,6 +289,30 @@ export default function Home() {
           <p style={{ color: 'oklch(0.76 0.006 255)', fontSize: 15.5, marginBottom: 16 }}>I have always been interested in tech and engineering a better world. After dozens of summer camps, I knew I wanted to be an engineer, and after time interning I knew I wanted to be in product.</p>
           <p style={{ color: 'oklch(0.76 0.006 255)', fontSize: 15.5, marginBottom: 16 }}>I am passionate about Social Innovation, Entrepreneurship, and International Travel. I am a Cincinnati Bengals, Ohio State Buckeyes, Liverpool FC, and Denver Nuggets fan.</p>
           <p style={{ color: 'oklch(0.76 0.006 255)', fontSize: 15.5 }}>Currently studying <strong style={{ color: 'var(--text)', fontWeight: 500 }}>Computer Science and Engineering + Theoretical Mathematics</strong> at <strong style={{ color: 'var(--text)', fontWeight: 500 }}>The Ohio State University</strong>, with a minor in Education.</p>
+          <p style={{ color: 'oklch(0.76 0.006 255)', fontSize: 15.5, marginTop: 16 }}>This is a simple portfolio website to showcase my work and experiences. It is built with Next.js and TypeScript.</p>
+          <p style={{ color: 'oklch(0.76 0.006 255)', fontSize: 15.5, marginTop: 16 }}>I am always excited to connect with like-minded people, so feel free to reach out!</p>
+          <a
+            href="https://cal.com/alonzoji"
+            target="_blank"
+            rel="noopener"
+            style={{
+              display: 'inline-block',
+              marginTop: 24,
+              padding: '8px 20px',
+              fontSize: 13,
+              fontFamily: 'var(--mono)',
+              color: 'var(--text)',
+              border: '1px solid var(--border)',
+              borderRadius: 6,
+              textDecoration: 'none',
+              letterSpacing: '0.04em',
+              transition: 'border-color 0.15s',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--text)')}
+            onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+          >
+            Schedule a call →
+          </a>
         </section>
 
         <section id="experience">

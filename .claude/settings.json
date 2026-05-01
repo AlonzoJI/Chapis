@@ -25,7 +25,8 @@
       "Bash(curl -s \"https://www.carltonaikins.com/\")",
       "Bash(curl -s \"https://www.carltonaikins.com/_next/static/chunks/3f686c9e1e06bda9.js?dpl=dpl_4ANt5LSJAjtQqRJKGUGcLcUnPfyH\")",
       "Bash(python3 -c ' *)",
-      "Bash(curl -s \"https://www.carltonaikins.com/_next/static/chunks/a9aec93d4faed266.js?dpl=dpl_4ANt5LSJAjtQqRJKGUGcLcUnPfyH\")"
+      "Bash(curl -s \"https://www.carltonaikins.com/_next/static/chunks/a9aec93d4faed266.js?dpl=dpl_4ANt5LSJAjtQqRJKGUGcLcUnPfyH\")",
+      "Bash(curl -sL \"https://avatars.githubusercontent.com/u/86431829?v=4\" -o /Users/jaredalonzo/Documents/personal_website/app/icon.png)"
     ],
     "additionalDirectories": [
       "/Users/jaredalonzo/Documents/personal_website/chapis/app/api/tiles/[...slug]/public"
