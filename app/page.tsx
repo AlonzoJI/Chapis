@@ -109,7 +109,7 @@ function VisitorMap() {
       try {
         const res = await fetch('/api/visit');
         const { count: globalCount } = await res.json();
-        if (globalCount > 0) setCount(globalCount);
+        setCount(globalCount);
       } catch {}
 
       const maplibregl = (await import('maplibre-gl')).default;
