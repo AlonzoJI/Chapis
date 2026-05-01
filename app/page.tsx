@@ -33,12 +33,36 @@ const programs = [
 ];
 
 const projects = [
-  { name: 'Project One', desc: 'A short description of what this project does and what problem it solves.' },
-  { name: 'Project Two', desc: 'A short description of what this project does and what problem it solves.' },
-  { name: 'Project Three', desc: 'A short description of what this project does and what problem it solves.' },
-  { name: 'Project Four', desc: 'A short description of what this project does and what problem it solves.' },
-  { name: 'Project Five', desc: 'A short description of what this project does and what problem it solves.' },
-  { name: 'Project Six', desc: 'A short description of what this project does and what problem it solves.' },
+  {
+    name: 'Hue — AI Language Coach',
+    desc: 'An AI-powered English fluency coach for ESL learners. Hue grades speaking skills through natural 1:1 conversations in a gamified format, built with React, TypeScript, and Gemini 2.5 Flash.',
+    link: 'https://hue-git-main-jared-alonzos-projects.vercel.app/'
+  },
+  {
+    name: 'Hue — AI Language Coach iOS',
+    desc: 'A native iOS version of Hue built with Swift and Xcode, bringing AI-powered English fluency coaching to iPhone with a JavaScript backend.',
+    link: ''
+  },
+  {
+    name: 'QuikChek',
+    desc: 'A mobile-first news and fact-checking app for Gen Z. Delivers daily news at an 8th-grade reading level and verifies TikTok links in real time using audio transcription and multi-source claim analysis.',
+    link: 'https://quik-chek.vercel.app'
+  },
+  {
+    name: 'SkillBridge',
+    desc: 'A CLI tool that critiques your résumé and generates a new one from scratch using GPT-3.5. Parses PDF/DOCX input, drafts impact bullets with AI, and outputs a polished LaTeX/PDF résumé.',
+    link: 'https://github.com/AlonzoJI/SkillBridge'
+  },
+  {
+    name: 'NetPay',
+    desc: 'A Ruby on Rails app for splitting group trip expenses. Users create trips, add participants and expenses, and get an automatic settlement strategy showing exactly who owes whom.',
+    link: 'https://github.com/AlonzoJI/NetPay'
+  },
+  {
+    name: 'Curriculum Visualization',
+    desc: 'An interactive 4-year course map for the OSU CS&E curriculum. Hover over any course to highlight its full prerequisite and postrequisite chain across all 8 semesters.',
+    link: 'https://github.com/cse3901-osu-2026sp-910/hexcode_vis'
+  },
 ];
 
 const posts = [
@@ -231,8 +255,7 @@ export default function Home() {
         .projects-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .project-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 20px; transition: border-color 0.15s; cursor: pointer; }
         .project-card:hover { border-color: oklch(0.36 0.008 255); }
-        .project-placeholder { width: 100%; height: 80px; background: repeating-linear-gradient(45deg,transparent,transparent 4px,oklch(0.18 0.008 255) 4px,oklch(0.18 0.008 255) 5px); border-radius: 6px; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; font-family: var(--mono); font-size: 10px; color: oklch(0.35 0.008 255); letter-spacing: 0.05em; }
-        .project-name { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 6px; font-family: var(--serif); }
+.project-name { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 6px; font-family: var(--serif); }
         .project-desc { font-size: 13px; color: var(--muted); line-height: 1.55; font-family: var(--serif); }
         .blog-item { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 18px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
         .blog-item:first-child { border-top: 1px solid var(--border); }
@@ -327,11 +350,17 @@ export default function Home() {
           <h2>Projects</h2>
           <div className="projects-grid">
             {projects.map((p, i) => (
-              <div key={i} className="project-card">
-                <div className="project-placeholder">project screenshot</div>
+              <a
+                key={i}
+                className="project-card"
+                href={p.link || '#'}
+                target={p.link ? '_blank' : '_self'}
+                rel="noopener"
+                style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
+              >
                 <div className="project-name">{p.name}</div>
                 <div className="project-desc">{p.desc}</div>
-              </div>
+              </a>
             ))}
           </div>
         </section>
