@@ -35,7 +35,7 @@ const programs = [
 const projects = [
   {
     name: 'Hue — AI Language Coach',
-    desc: 'An AI-powered English fluency coach for ESL learners. Hue grades speaking skills through natural 1:1 conversations in a gamified format, built with React, TypeScript, and Gemini 2.5 Flash.',
+    desc: 'An AI-powered English fluency coach for ESL learners. Hue grades speaking skills through natural 1:1 conversations in a gamified format, built with React, TypeScript and Gemini 2.5 Flash.',
     link: 'https://hue-git-main-jared-alonzos-projects.vercel.app/'
   },
   {
@@ -50,12 +50,12 @@ const projects = [
   },
   {
     name: 'SkillBridge',
-    desc: 'A CLI tool that critiques your résumé and generates a new one from scratch using GPT-3.5. Parses PDF/DOCX input, drafts impact bullets with AI, and outputs a polished LaTeX/PDF résumé.',
+    desc: 'A CLI tool that critiques your résumé and generates a new one from scratch using GPT-3.5. Parses PDF/DOCX input, drafts impact bullets with AI and outputs a polished LaTeX/PDF résumé.',
     link: 'https://github.com/AlonzoJI/SkillBridge'
   },
   {
     name: 'NetPay',
-    desc: 'A Ruby on Rails app for splitting group trip expenses. Users create trips, add participants and expenses, and get an automatic settlement strategy showing exactly who owes whom.',
+    desc: 'A Ruby on Rails app for splitting group trip expenses. Users create trips, add participants and expenses and get an automatic settlement strategy showing exactly who owes whom.',
     link: 'https://github.com/cse3901-osu-2026sp-910/hexcode_final_project'
   },
   {
@@ -286,8 +286,8 @@ export default function Home() {
           <h1 style={{ fontSize: 28, fontWeight: 400, letterSpacing: '-0.01em', marginBottom: 4, fontFamily: 'var(--serif)' }}>Jared Alonzo</h1>
           <p style={{ fontSize: 13, color: 'var(--muted)', fontFamily: 'var(--mono)', marginBottom: 32 }}>Product + Systems</p>
           <p style={{ color: 'oklch(0.76 0.006 255)', fontSize: 15.5, marginBottom: 16 }}>Welcome to my portfolio. You can call me <strong style={{ color: 'var(--text)', fontWeight: 500 }}>Chapis</strong>. I am a first-generation Guatemalan-American who grew up in a low-income environment.</p>
-          <p style={{ color: 'oklch(0.76 0.006 255)', fontSize: 15.5, marginBottom: 16 }}>I have always been interested in tech and engineering a better world. After dozens of summer camps, I knew I wanted to be an engineer, and after time interning I knew I wanted to be in product.</p>
-          <p style={{ color: 'oklch(0.76 0.006 255)', fontSize: 15.5, marginBottom: 16 }}>I am passionate about Social Innovation, Entrepreneurship, and International Travel. I am a Cincinnati Bengals, Ohio State Buckeyes, Liverpool FC, and Denver Nuggets fan.</p>
+          <p style={{ color: 'oklch(0.76 0.006 255)', fontSize: 15.5, marginBottom: 16 }}>I have always been interested in tech and engineering a better world. After dozens of summer camps, I knew I wanted to be an engineer and after time interning I knew I wanted to be in product.</p>
+          <p style={{ color: 'oklch(0.76 0.006 255)', fontSize: 15.5, marginBottom: 16 }}>I am passionate about Social Innovation, Entrepreneurship and International Travel. I am a Cincinnati Bengals, Ohio State Buckeyes, Liverpool FC and Denver Nuggets fan.</p>
           <p style={{ color: 'oklch(0.76 0.006 255)', fontSize: 15.5 }}>Currently studying <strong style={{ color: 'var(--text)', fontWeight: 500 }}>Computer Science and Engineering + Theoretical Mathematics</strong> at <strong style={{ color: 'var(--text)', fontWeight: 500 }}>The Ohio State University</strong>, with a minor in Education.</p>
           <p style={{ color: 'oklch(0.76 0.006 255)', fontSize: 15.5, marginTop: 16 }}>This is a simple portfolio website to showcase my work and experiences. It is built with Next.js and TypeScript.</p>
           <p style={{ color: 'oklch(0.76 0.006 255)', fontSize: 15.5, marginTop: 16 }}>I am always excited to connect with like-minded people, so feel free to reach out!</p>
