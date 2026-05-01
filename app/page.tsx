@@ -95,26 +95,22 @@ function VisitorMap() {
 
     async function init() {
       const KEY_LAST = 'portfolio_last_visitor_v2';
-      const KEY_COUNT = 'portfolio_visitor_count_v2';
 
-      const getCount = () => parseInt(localStorage.getItem(KEY_COUNT) || '0');
-      const incrementCount = () => {
-        const next = getCount() + 1;
-        localStorage.setItem(KEY_COUNT, String(next));
-        return next;
-      };
       const getStored = () => {
         try { const r = localStorage.getItem(KEY_LAST); return r ? JSON.parse(r) : null; } catch { return null; }
       };
       const setStored = (d: StoredVisitor) => localStorage.setItem(KEY_LAST, JSON.stringify(d));
 
-      const c = getCount();
-      if (c > 0) setCount(c);
-
       const stored = getStored();
       if (stored) {
         setStatus({ city: stored.city, country: stored.country, ts: stored.ts, live: false });
       }
+
+      try {
+        const res = await fetch('/api/visit');
+        const { count: globalCount } = await res.json();
+        if (globalCount > 0) setCount(globalCount);
+      } catch {}
 
       const maplibregl = (await import('maplibre-gl')).default;
       await import('maplibre-gl/dist/maplibre-gl.css');
@@ -162,8 +158,11 @@ function VisitorMap() {
             ts: Date.now(),
           };
           setStored(fresh);
-          const newCount = incrementCount();
-          setCount(newCount);
+          try {
+            const res = await fetch('/api/visit', { method: 'POST' });
+            const { count: newCount } = await res.json();
+            setCount(newCount);
+          } catch {}
           setStatus({ ...fresh, live: true });
           map.flyTo({ center: [fresh.lon, fresh.lat], zoom: 5, duration: stored ? 1200 : 0 });
           map.once('idle', () => addMarker(fresh.lon, fresh.lat));
@@ -285,7 +284,7 @@ export default function Home() {
       <main>
         <section id="intro" style={{ paddingTop: 64 }}>
           <h1 style={{ fontSize: 28, fontWeight: 400, letterSpacing: '-0.01em', marginBottom: 4, fontFamily: 'var(--serif)' }}>Jared Alonzo</h1>
-          <p style={{ fontSize: 13, color: 'var(--muted)', fontFamily: 'var(--mono)', marginBottom: 32 }}>Product + Engineering</p>
+          <p style={{ fontSize: 13, color: 'var(--muted)', fontFamily: 'var(--mono)', marginBottom: 32 }}>Product + Systems</p>
           <p style={{ color: 'oklch(0.76 0.006 255)', fontSize: 15.5, marginBottom: 16 }}>Welcome to my portfolio. You can call me <strong style={{ color: 'var(--text)', fontWeight: 500 }}>Chapis</strong>. I am a first-generation Guatemalan-American who grew up in a low-income environment.</p>
           <p style={{ color: 'oklch(0.76 0.006 255)', fontSize: 15.5, marginBottom: 16 }}>I have always been interested in tech and engineering a better world. After dozens of summer camps, I knew I wanted to be an engineer, and after time interning I knew I wanted to be in product.</p>
           <p style={{ color: 'oklch(0.76 0.006 255)', fontSize: 15.5, marginBottom: 16 }}>I am passionate about Social Innovation, Entrepreneurship, and International Travel. I am a Cincinnati Bengals, Ohio State Buckeyes, Liverpool FC, and Denver Nuggets fan.</p>
