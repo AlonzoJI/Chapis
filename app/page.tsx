@@ -36,12 +36,12 @@ const projects = [
   {
     name: 'Hue — AI Language Coach',
     desc: 'An AI-powered English fluency coach for ESL learners. Hue grades speaking skills through natural 1:1 conversations in a gamified format, built with React, TypeScript and Gemini 2.5 Flash.',
-    link: 'https://hue-git-main-jared-alonzos-projects.vercel.app/'
+    link: 'https://hue-teal.vercel.app/'
   },
   {
     name: 'Hue — AI Language Coach iOS',
     desc: 'A native iOS version of Hue built with Swift and Xcode, bringing AI-powered English fluency coaching to iPhone with a JavaScript backend.',
-    link: ''
+    link: 'https://hue-teal.vercel.app/'
   },
   {
     name: 'QuikChek',
@@ -276,7 +276,7 @@ export default function Home() {
             <li><a href="#involvement">Involvement</a></li>
             <li><a href="#programs">Programs</a></li>
             <li><a href="#projects">Projects</a></li>
-            <li><a href="#blog">Blog</a></li>
+            <li><a href="/blog">Blog</a></li>
           </ul>
         </div>
       </nav>
@@ -289,7 +289,6 @@ export default function Home() {
           <p style={{ color: 'oklch(0.76 0.006 255)', fontSize: 15.5, marginBottom: 16 }}>I have always been interested in tech and engineering a better world. After dozens of summer camps, I knew I wanted to be an engineer and after time interning I knew I wanted to be in product.</p>
           <p style={{ color: 'oklch(0.76 0.006 255)', fontSize: 15.5, marginBottom: 16 }}>I am passionate about Social Innovation, Entrepreneurship and International Travel. I am a Cincinnati Bengals, Ohio State Buckeyes, Liverpool FC and Denver Nuggets fan.</p>
           <p style={{ color: 'oklch(0.76 0.006 255)', fontSize: 15.5 }}>Currently studying <strong style={{ color: 'var(--text)', fontWeight: 500 }}>Computer Science and Engineering + Theoretical Mathematics</strong> at <strong style={{ color: 'var(--text)', fontWeight: 500 }}>The Ohio State University</strong>, with a minor in Education.</p>
-          <p style={{ color: 'oklch(0.76 0.006 255)', fontSize: 15.5, marginTop: 16 }}>This is a simple portfolio website to showcase my work and experiences. It is built with Next.js and TypeScript.</p>
           <p style={{ color: 'oklch(0.76 0.006 255)', fontSize: 15.5, marginTop: 16 }}>I am always excited to connect with like-minded people, so feel free to reach out!</p>
           <a
             href="https://cal.com/alonzoji"
