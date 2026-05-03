@@ -66,9 +66,9 @@ const projects = [
 ];
 
 const posts = [
-  { title: 'Coming soon: first post title here', date: '2026' },
-  { title: 'Another post placeholder', date: '2026' },
-  { title: 'One more post placeholder', date: '2025' },
+  { title: 'The Product Builder', date: '2025', href: '/blog/product-strategy-talk' },
+  { title: 'What Food Means', date: '2025', href: '/blog/le-foodist-paris' },
+  { title: 'The Sign', date: '2025', href: '/blog/cincinnati-sign' },
 ];
 
 type StoredVisitor = { city: string; country: string; lat: number; lon: number; ts: number };
@@ -254,12 +254,12 @@ export default function Home() {
         .projects-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .project-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 20px; transition: border-color 0.15s; cursor: pointer; }
         .project-card:hover { border-color: oklch(0.36 0.008 255); }
-.project-name { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 6px; font-family: var(--serif); }
+        .project-name { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 6px; font-family: var(--serif); }
         .project-desc { font-size: 13px; color: var(--muted); line-height: 1.55; font-family: var(--serif); }
-        .blog-item { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 18px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
+        .blog-item { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 18px 0; border-bottom: 1px solid var(--border); text-decoration: none; color: inherit; }
         .blog-item:first-child { border-top: 1px solid var(--border); }
-        .blog-title { font-size: 14px; color: oklch(0.72 0.006 255); transition: color 0.12s; font-family: var(--serif); }
         .blog-item:hover .blog-title { color: var(--text); }
+        .blog-title { font-size: 14px; color: oklch(0.72 0.006 255); transition: color 0.12s; font-family: var(--serif); }
         .blog-date { font-size: 11px; color: var(--muted); font-family: var(--mono); white-space: nowrap; }
         footer { max-width: var(--max); margin: 0 auto; padding: 32px 24px 48px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border); flex-wrap: wrap; gap: 12px; }
         footer a { font-size: 13px; color: var(--muted); text-decoration: none; transition: color 0.15s; font-family: var(--serif); }
@@ -391,10 +391,15 @@ export default function Home() {
           <h2>Blog</h2>
           <div>
             {posts.map((p, i) => (
-              <div key={i} className="blog-item">
+              <a
+                key={i}
+                className="blog-item"
+                href={p.href}
+                style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 16 }}
+              >
                 <span className="blog-title">{p.title}</span>
                 <span className="blog-date">{p.date}</span>
-              </div>
+              </a>
             ))}
           </div>
         </section>
