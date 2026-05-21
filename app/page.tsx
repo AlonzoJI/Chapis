@@ -97,9 +97,9 @@ const posts: Post[] = [
 // ─── Graph: Q₃ (3-cube hypercube). 8 vertices, 12 edges. ─────────────
 // Sections traverse the cube in Gray-code order, so each step is a single edge.
 
-type Node = { id: string; label: string; full: string; section: string };
+type CubeVertex = { id: string; label: string; full: string; section: string };
 
-const NODES: Node[] = [
+const NODES: CubeVertex[] = [
   { id: 'intro',       label: '000', full: 'Intro',       section: '#intro' },
   { id: 'experience',  label: '001', full: 'Experience',  section: '#experience' },
   { id: 'involvement', label: '011', full: 'Involvement', section: '#involvement' },
