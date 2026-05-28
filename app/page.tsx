@@ -43,6 +43,12 @@ const projects = [
   { name: 'Curriculum Visualization', desc: 'Interactive 4-year map of OSU CS&E. Hover any course to highlight its full prereq/postreq chain across all 8 semesters.', tags: ['D3', 'Graph traversal'], link: 'https://github.com/cse3901-osu-2026sp-910/hexcode_vis' },
 ];
 
+const techCategories: Array<{ name: string; items: string[] }> = [
+  { name: 'Languages', items: ['C/C++', 'Python', 'TypeScript', 'JavaScript', 'Java', 'Golang', 'Ruby', 'Swift/SwiftUI', 'SQL', 'HTML/CSS', 'kdb+/q'] },
+  { name: 'Frameworks & Libraries', items: ['React', 'Next.js', 'Node.js', 'Flask', 'Django', 'Rails', 'NumPy', 'pandas', 'TailwindCSS', 'Storybook.js', 'discord.js'] },
+  { name: 'Tools & Infrastructure', items: ['Git', 'Docker', 'AWS', 'CI/CD', 'MongoDB', 'PostgreSQL', 'Aurora DB', 'Terraform', 'Jira', 'Agile'] },
+];
+
 type Post = { date: string; title: string; lede?: string; hero?: string; paragraphs: string[] };
 
 const posts: Post[] = [
@@ -102,8 +108,8 @@ type CubeVertex = { id: string; label: string; full: string; section: string };
 const NODES: CubeVertex[] = [
   { id: 'intro',       label: '000', full: 'Intro',       section: '#intro' },
   { id: 'experience',  label: '001', full: 'Experience',  section: '#experience' },
-  { id: 'involvement', label: '011', full: 'Involvement', section: '#involvement' },
-  { id: 'programs',    label: '010', full: 'Programs',    section: '#programs' },
+  { id: 'involvement', label: '011', full: 'Involvement', section: '#experience' },
+  { id: 'programs',    label: '010', full: 'Programs',    section: '#experience' },
   { id: 'projects',    label: '110', full: 'Projects',    section: '#projects' },
   { id: 'writing',     label: '111', full: 'Writing',     section: '#writing' },
   { id: 'visitor',     label: '101', full: 'Visitor',     section: '#last-visitor' },
@@ -403,11 +409,32 @@ function SectionHead({ index, title, subtitle, nodeId }: { index: string; title:
 
 // ─── Page ─────────────────────────────────────────────────────────────
 
+type ExpTab = 'work' | 'involvement' | 'programs';
+
+const EXP_TAB_TO_VERTEX: Record<ExpTab, string> = {
+  work: 'experience',
+  involvement: 'involvement',
+  programs: 'programs',
+};
+
+const EXP_TAB_META: Record<ExpTab, { index: string; subtitle: string }> = {
+  work: { index: '001', subtitle: 'longest path' },
+  involvement: { index: '011', subtitle: 'connected components' },
+  programs: { index: '010', subtitle: 'covering set' },
+};
+
 export default function Home() {
   const [cubeMode, setCubeMode] = useState<CubeMode>('loading');
   const [overlayFading, setOverlayFading] = useState(false);
   const [showOverlay, setShowOverlay] = useState(true);
   const [activeSection, setActiveSection] = useState<string>('intro');
+  const [expTab, setExpTab] = useState<ExpTab>('work');
+
+  // The cube vertex that should be highlighted: when scrolled into the merged
+  // Experience section, the highlight follows the active tab.
+  const activeCubeVertex = activeSection === 'experience'
+    ? EXP_TAB_TO_VERTEX[expTab]
+    : activeSection;
 
   // First-visit gating
   useEffect(() => {
@@ -438,7 +465,9 @@ export default function Home() {
     };
   }, []);
 
-  // Scroll-spy: track which section is in view
+  // Scroll-spy: track which section is in view. Includes #technologies
+  // (a section without a cube vertex) so its mini cube renders with no
+  // highlight while the user is reading it.
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
@@ -448,8 +477,9 @@ export default function Home() {
         }
       });
     }, { rootMargin: '-40% 0px -55% 0px' });
-    NODES.forEach(n => {
-      const el = document.querySelector(n.section);
+    const sectionIds = ['intro', 'experience', 'technologies', 'projects', 'writing', 'last-visitor', 'contact'];
+    sectionIds.forEach(id => {
+      const el = document.getElementById(id);
       if (el) observer.observe(el);
     });
     return () => observer.disconnect();
@@ -463,6 +493,10 @@ export default function Home() {
   }, []);
 
   const handleNodeClick = useCallback((id: string) => {
+    // Clicking one of the three experience-tab vertices also switches the tab.
+    if (id === 'experience') setExpTab('work');
+    else if (id === 'involvement') setExpTab('involvement');
+    else if (id === 'programs') setExpTab('programs');
     jumpTo(id);
     setCubeMode('docked');
   }, [jumpTo]);
@@ -647,6 +681,24 @@ export default function Home() {
         .adj-year { font-size: 11px; color: var(--muted); font-family: var(--mono); white-space: nowrap; }
         .adj-role { font-size: 13px; color: oklch(0.66 0.006 255); }
 
+        /* ── Experience tabs ── */
+        .tabs { display: flex; gap: 6px; margin-bottom: 24px; flex-wrap: wrap; }
+        .tab { padding: 7px 14px; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--border); border-radius: 999px; cursor: pointer; background: transparent; transition: color 0.15s, border-color 0.15s, background 0.15s; }
+        .tab:hover { color: var(--text); border-color: oklch(0.36 0.008 255); }
+        .tab.is-active { color: var(--text); border-color: var(--accent); background: oklch(0.16 0.008 255); }
+
+        /* ── Technologies ── */
+        .tech-list { display: flex; flex-direction: column; gap: 20px; }
+        .tech-cat { padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+        .tech-cat:last-child { border-bottom: none; padding-bottom: 0; }
+        .tech-cat-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+        .tech-cat-name { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; color: var(--text); text-transform: uppercase; }
+        .tech-cat-count { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+        .tech-cat-items { font-family: var(--mono); font-size: 12px; color: var(--muted); letter-spacing: 0.02em; line-height: 1.85; }
+        .tech-cat-items .br { color: oklch(0.40 0.008 255); }
+        .tech-cat-items .tag { color: oklch(0.72 0.006 255); }
+        .tech-cat-items .tag + .tag::before { content: ', '; color: oklch(0.40 0.008 255); }
+
         /* ── Projects ── */
         .proj-list { display: flex; flex-direction: column; }
         .proj-row { display: grid; grid-template-columns: 36px 1fr; gap: 14px; padding: 18px 0; border-bottom: 1px solid var(--border); text-decoration: none; color: inherit; transition: background 0.15s; }
@@ -713,7 +765,7 @@ export default function Home() {
 
       <CubeNav
         mode={cubeMode}
-        active={activeSection}
+        active={activeCubeVertex}
         onExpand={() => setCubeMode('expanded')}
         onCollapse={() => setCubeMode('docked')}
         onNodeClick={handleNodeClick}
@@ -726,7 +778,7 @@ export default function Home() {
             <span className="nav-handle">@chapis</span>
           </a>
           <span className="nav-current">
-            {(NODES.find(n => n.id === activeSection)?.full ?? '').toLowerCase()}
+            {(NODES.find(n => n.id === activeCubeVertex)?.full ?? '').toLowerCase()}
           </span>
         </div>
       </nav>
@@ -751,56 +803,91 @@ export default function Home() {
         </section>
 
         <section id="experience">
-          <SectionHead index="001" title="Experience" subtitle="longest path" nodeId="experience" />
-          <div className="adj-list">
-            {experience.map((e, i) => (
-              <div key={i} className="adj-row">
-                <div className="adj-logo"><img src={e.logo} alt={e.name} /></div>
-                <span className="adj-arrow">→</span>
-                <div className="adj-body">
-                  <div className="adj-head">
-                    <span className="adj-name">{e.name}</span>
-                    <span className="adj-year">{e.year}</span>
-                  </div>
-                  <span className="adj-role">{e.role}</span>
-                </div>
-              </div>
+          <SectionHead
+            index={EXP_TAB_META[expTab].index}
+            title="Experience"
+            subtitle={EXP_TAB_META[expTab].subtitle}
+            nodeId={EXP_TAB_TO_VERTEX[expTab]}
+          />
+          <div className="tabs" role="tablist" aria-label="Experience type">
+            {(['work', 'involvement', 'programs'] as const).map(t => (
+              <button
+                key={t}
+                role="tab"
+                aria-selected={expTab === t}
+                className={`tab ${expTab === t ? 'is-active' : ''}`}
+                onClick={() => setExpTab(t)}
+              >
+                {t === 'work' ? 'Work' : t === 'involvement' ? 'Involvement' : 'Programs'}
+              </button>
             ))}
           </div>
-        </section>
-
-        <section id="involvement">
-          <SectionHead index="011" title="Involvement" subtitle="connected components" nodeId="involvement" />
-          <div className="adj-list">
-            {involvement.map((e, i) => (
-              <div key={i} className="adj-row">
-                <div className="adj-logo"><img src={e.logo} alt={e.name} /></div>
-                <span className="adj-arrow">→</span>
-                <div className="adj-body">
-                  <div className="adj-head">
-                    <span className="adj-name">{e.name}</span>
-                    <span className="adj-year">{e.year}</span>
+          {expTab === 'work' && (
+            <div className="adj-list">
+              {experience.map((e, i) => (
+                <div key={i} className="adj-row">
+                  <div className="adj-logo"><img src={e.logo} alt={e.name} /></div>
+                  <span className="adj-arrow">→</span>
+                  <div className="adj-body">
+                    <div className="adj-head">
+                      <span className="adj-name">{e.name}</span>
+                      <span className="adj-year">{e.year}</span>
+                    </div>
+                    <span className="adj-role">{e.role}</span>
                   </div>
-                  <span className="adj-role">{e.role}</span>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
+          {expTab === 'involvement' && (
+            <div className="adj-list">
+              {involvement.map((e, i) => (
+                <div key={i} className="adj-row">
+                  <div className="adj-logo"><img src={e.logo} alt={e.name} /></div>
+                  <span className="adj-arrow">→</span>
+                  <div className="adj-body">
+                    <div className="adj-head">
+                      <span className="adj-name">{e.name}</span>
+                      <span className="adj-year">{e.year}</span>
+                    </div>
+                    <span className="adj-role">{e.role}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          {expTab === 'programs' && (
+            <div className="adj-list">
+              {programs.map((e, i) => (
+                <div key={i} className="adj-row">
+                  <div className="adj-logo"><img src={e.logo} alt={e.name} /></div>
+                  <span className="adj-arrow">→</span>
+                  <div className="adj-body">
+                    <div className="adj-head">
+                      <span className="adj-name">{e.program}</span>
+                      <span className="adj-year">{e.year.split(' ').pop()}</span>
+                    </div>
+                    <span className="adj-role">{e.name}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
-        <section id="programs">
-          <SectionHead index="010" title="Professional Development" subtitle="covering set" nodeId="programs" />
-          <div className="adj-list">
-            {programs.map((e, i) => (
-              <div key={i} className="adj-row">
-                <div className="adj-logo"><img src={e.logo} alt={e.name} /></div>
-                <span className="adj-arrow">→</span>
-                <div className="adj-body">
-                  <div className="adj-head">
-                    <span className="adj-name">{e.program}</span>
-                    <span className="adj-year">{e.year.split(' ').pop()}</span>
-                  </div>
-                  <span className="adj-role">{e.name}</span>
+        <section id="technologies">
+          <SectionHead index="τ" title="Technologies" subtitle="working set" nodeId="technologies" />
+          <div className="tech-list">
+            {techCategories.map(cat => (
+              <div key={cat.name} className="tech-cat">
+                <div className="tech-cat-head">
+                  <span className="tech-cat-name">{cat.name}</span>
+                  <span className="tech-cat-count">{cat.items.length}</span>
+                </div>
+                <div className="tech-cat-items">
+                  <span className="br">{'{ '}</span>
+                  {cat.items.map(t => <span key={t} className="tag">{t}</span>)}
+                  <span className="br">{' }'}</span>
                 </div>
               </div>
             ))}
