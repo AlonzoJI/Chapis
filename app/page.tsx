@@ -5,8 +5,8 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 // ─── Data ─────────────────────────────────────────────────────────────
 
 const experience = [
-  { logo: '/logos/autodesk_logo.jpeg', name: 'Autodesk', year: '2026', role: 'Associate Product Manager Intern' },
-  { logo: '/logos/capital_one_logo.jpeg', name: 'Capital One', year: '2025', role: 'Associate Product Manager Intern' },
+  { logo: '/logos/autodesk_logo.jpeg', name: 'Autodesk', year: '2026', role: 'Product Manager Intern' },
+  { logo: '/logos/capital_one_logo.jpeg', name: 'Capital One', year: '2025', role: 'Product Manager Intern' },
   { logo: '/logos/capital_one_logo.jpeg', name: 'Capital One', year: '2024', role: 'Software Engineer Intern' },
   { logo: '/logos/procter_and_gamble_logo.jpeg', name: 'Procter & Gamble', year: '2023', role: 'Software Engineer Intern' },
   { logo: '/logos/procter_and_gamble_logo.jpeg', name: 'Procter & Gamble', year: '2022', role: 'Software Engineer Intern' },
@@ -100,54 +100,54 @@ const posts: Post[] = [
   },
 ];
 
-// ─── Graph: Q₃ (3-cube hypercube). 8 vertices, 12 edges. ─────────────
-// Sections traverse the cube in Gray-code order, so each step is a single edge.
+// ─── Graph: W₆ wheel (hexagonal pyramid). 7 vertices, 12 edges. ──────
+// Apex = intro; 6 base vertices form a hexagon, one per other page section.
 
 type CubeVertex = { id: string; label: string; full: string; section: string };
 
 const NODES: CubeVertex[] = [
-  { id: 'intro',       label: '000', full: 'Intro',       section: '#intro' },
-  { id: 'experience',  label: '001', full: 'Experience',  section: '#experience' },
-  { id: 'involvement', label: '011', full: 'Involvement', section: '#experience' },
-  { id: 'programs',    label: '010', full: 'Programs',    section: '#experience' },
-  { id: 'projects',    label: '110', full: 'Projects',    section: '#projects' },
-  { id: 'writing',     label: '111', full: 'Writing',     section: '#writing' },
-  { id: 'visitor',     label: '101', full: 'Visitor',     section: '#last-visitor' },
-  { id: 'contact',     label: '100', full: 'Contact',     section: '#contact' },
+  { id: 'intro',        label: '0', full: 'Intro',        section: '#intro' },
+  { id: 'experience',   label: '1', full: 'Experience',   section: '#experience' },
+  { id: 'technologies', label: '2', full: 'Technologies', section: '#technologies' },
+  { id: 'projects',     label: '3', full: 'Projects',     section: '#projects' },
+  { id: 'writing',      label: '4', full: 'Writing',      section: '#writing' },
+  { id: 'visitor',      label: '5', full: 'Visitor',      section: '#last-visitor' },
+  { id: 'contact',      label: '6', full: 'Contact',      section: '#contact' },
 ];
 
-// Project a binary label (e.g. '101') to a 2D cabinet-projection position.
-// Bit 2 = depth (back), bit 1 = vertical, bit 0 = horizontal.
-const SCALE = 84;
-const DEPTH_X = 40;
-const DEPTH_Y = -40;
+// Cabinet projection of a hexagonal pyramid: apex above, hexagonal base on
+// a flattened ellipse below. Upper half of the ellipse reads as "back" of
+// the solid, lower half as "front".
+const APEX_Y = -94;
+const BASE_CY = 32;
+const BASE_RX = 96;
+const BASE_RY = 22;
+const BASE_ANGLES_DEG = [90, 30, -30, -90, -150, 150]; // clockwise from top
 
 function cubePos(label: string) {
-  const bz = label.charCodeAt(0) - 48; // back
-  const by = label.charCodeAt(1) - 48; // top (SVG-flipped)
-  const bx = label.charCodeAt(2) - 48; // right
+  if (label === '0') return { x: 0, y: APEX_Y, back: false };
+  const i = parseInt(label, 10) - 1; // '1'..'6' → 0..5
+  const rad = (BASE_ANGLES_DEG[i] * Math.PI) / 180;
   return {
-    x: (bx === 0 ? -1 : 1) * SCALE + bz * DEPTH_X,
-    y: (by === 0 ?  1 : -1) * SCALE + bz * DEPTH_Y,
-    back: bz === 1,
+    x: BASE_RX * Math.cos(rad),
+    y: BASE_CY - BASE_RY * Math.sin(rad),
+    back: Math.sin(rad) > 0.1,
   };
 }
 
-// All pairs of vertices that differ in exactly one bit (Hamming distance 1).
+// 12 edges: 6 spokes (apex → each base vertex) + 6 base-cycle edges.
 const EDGES: Array<{ a: string; b: string; kind: 'front' | 'back' | 'connector' }> = (() => {
   const out: Array<{ a: string; b: string; kind: 'front' | 'back' | 'connector' }> = [];
-  for (let i = 0; i < NODES.length; i++) {
-    for (let j = i + 1; j < NODES.length; j++) {
-      const li = parseInt(NODES[i].label, 2);
-      const lj = parseInt(NODES[j].label, 2);
-      const diff = li ^ lj;
-      if (diff > 0 && (diff & (diff - 1)) === 0) {
-        const aBack = NODES[i].label[0] === '1';
-        const bBack = NODES[j].label[0] === '1';
-        const kind = aBack && bBack ? 'back' : (!aBack && !bBack ? 'front' : 'connector');
-        out.push({ a: NODES[i].id, b: NODES[j].id, kind });
-      }
-    }
+  const baseIds = NODES.slice(1).map(n => n.id);
+  for (const id of baseIds) out.push({ a: 'intro', b: id, kind: 'connector' });
+  for (let i = 0; i < 6; i++) {
+    const a = baseIds[i];
+    const b = baseIds[(i + 1) % 6];
+    let diff = BASE_ANGLES_DEG[(i + 1) % 6] - BASE_ANGLES_DEG[i];
+    if (diff > 180) diff -= 360;
+    if (diff < -180) diff += 360;
+    const midRad = (BASE_ANGLES_DEG[i] + diff / 2) * Math.PI / 180;
+    out.push({ a, b, kind: Math.sin(midRad) > 0.1 ? 'back' : 'front' });
   }
   return out;
 })();
@@ -268,7 +268,7 @@ function CubeNav({
         building={mode === 'loading'}
         onNodeClick={onNodeClick}
       />
-      {mode === 'docked' && <span className="cube-nav-hint">Q₃</span>}
+      {mode === 'docked' && <span className="cube-nav-hint">W₆</span>}
     </div>
   );
 }
@@ -281,8 +281,8 @@ function LoadingOverlay({ fading }: { fading: boolean }) {
   return (
     <div className={`loader-bg ${fading ? 'is-fading' : ''}`} aria-hidden="true">
       <div className="loader-stats" aria-hidden="true">
-        <span className="ls-1">Q₃ = (V, E)</span>
-        <span className="ls-2">|V| = 8</span>
+        <span className="ls-1">W₆ = (V, E)</span>
+        <span className="ls-2">|V| = 7</span>
         <span className="ls-3">|E| = 12</span>
         <span className="ls-4">— booting graph —</span>
       </div>
@@ -411,16 +411,10 @@ function SectionHead({ index, title, subtitle, nodeId }: { index: string; title:
 
 type ExpTab = 'work' | 'involvement' | 'programs';
 
-const EXP_TAB_TO_VERTEX: Record<ExpTab, string> = {
-  work: 'experience',
-  involvement: 'involvement',
-  programs: 'programs',
-};
-
-const EXP_TAB_META: Record<ExpTab, { index: string; subtitle: string }> = {
-  work: { index: '001', subtitle: 'longest path' },
-  involvement: { index: '011', subtitle: 'connected components' },
-  programs: { index: '010', subtitle: 'covering set' },
+const EXP_TAB_SUBTITLE: Record<ExpTab, string> = {
+  work: 'longest path',
+  involvement: 'connected components',
+  programs: 'covering set',
 };
 
 export default function Home() {
@@ -430,11 +424,7 @@ export default function Home() {
   const [activeSection, setActiveSection] = useState<string>('intro');
   const [expTab, setExpTab] = useState<ExpTab>('work');
 
-  // The cube vertex that should be highlighted: when scrolled into the merged
-  // Experience section, the highlight follows the active tab.
-  const activeCubeVertex = activeSection === 'experience'
-    ? EXP_TAB_TO_VERTEX[expTab]
-    : activeSection;
+  const activeCubeVertex = activeSection;
 
   // First-visit gating
   useEffect(() => {
@@ -493,10 +483,6 @@ export default function Home() {
   }, []);
 
   const handleNodeClick = useCallback((id: string) => {
-    // Clicking one of the three experience-tab vertices also switches the tab.
-    if (id === 'experience') setExpTab('work');
-    else if (id === 'involvement') setExpTab('involvement');
-    else if (id === 'programs') setExpTab('programs');
     jumpTo(id);
     setCubeMode('docked');
   }, [jumpTo]);
@@ -786,7 +772,7 @@ export default function Home() {
       <main>
         <section id="intro" className="hero">
           <h1>Jared Alonzo</h1>
-          <p className="role">Product + Systems  ·  <b>Q₃ = (V, E)</b>  ·  |V|=8, |E|=12</p>
+          <p className="role">Product + Systems  ·  <b>W₆ = (V, E)</b>  ·  |V|=7, |E|=12</p>
 
           <div className="hero-epigraph">
             Mathematicians do not study objects, but the relations between them.
@@ -804,10 +790,10 @@ export default function Home() {
 
         <section id="experience">
           <SectionHead
-            index={EXP_TAB_META[expTab].index}
+            index="1"
             title="Experience"
-            subtitle={EXP_TAB_META[expTab].subtitle}
-            nodeId={EXP_TAB_TO_VERTEX[expTab]}
+            subtitle={EXP_TAB_SUBTITLE[expTab]}
+            nodeId="experience"
           />
           <div className="tabs" role="tablist" aria-label="Experience type">
             {(['work', 'involvement', 'programs'] as const).map(t => (
@@ -876,7 +862,7 @@ export default function Home() {
         </section>
 
         <section id="technologies">
-          <SectionHead index="τ" title="Technologies" subtitle="working set" nodeId="technologies" />
+          <SectionHead index="2" title="Technologies" subtitle="working set" nodeId="technologies" />
           <div className="tech-list">
             {techCategories.map(cat => (
               <div key={cat.name} className="tech-cat">
@@ -895,7 +881,7 @@ export default function Home() {
         </section>
 
         <section id="projects">
-          <SectionHead index="110" title="Projects" subtitle="adjacency list" nodeId="projects" />
+          <SectionHead index="3" title="Projects" subtitle="adjacency list" nodeId="projects" />
           <div className="proj-list">
             {projects.map((p, i) => (
               <a key={i} className="proj-row" href={p.link || '#'} target={p.link ? '_blank' : '_self'} rel="noopener">
@@ -918,7 +904,7 @@ export default function Home() {
         </section>
 
         <section id="writing">
-          <SectionHead index="111" title="Writing" subtitle="leaf nodes" nodeId="writing" />
+          <SectionHead index="4" title="Writing" subtitle="leaf nodes" nodeId="writing" />
           <div>
             {posts.map((post, i) => (
               <details key={i} className="post">
@@ -940,12 +926,12 @@ export default function Home() {
         </section>
 
         <section id="last-visitor">
-          <SectionHead index="101" title="Last Visitor" subtitle="neighborhood N(v)" nodeId="visitor" />
+          <SectionHead index="5" title="Last Visitor" subtitle="neighborhood N(v)" nodeId="visitor" />
           <VisitorMap />
         </section>
 
         <section id="contact">
-          <SectionHead index="100" title="Contact" subtitle="incident edges" nodeId="contact" />
+          <SectionHead index="6" title="Contact" subtitle="incident edges" nodeId="contact" />
           <p className="contact-intro">If anything here resonated, the easiest way to connect is the link below. I read every message.</p>
           <div className="contact-grid">
             <a className="contact-card" href="https://cal.com/alonzoji" target="_blank" rel="noopener">
