@@ -103,9 +103,9 @@ const posts: Post[] = [
 // ─── Graph: W₆ wheel (hexagonal pyramid). 7 vertices, 12 edges. ──────
 // Apex = intro; 6 base vertices form a hexagon, one per other page section.
 
-type CubeVertex = { id: string; label: string; full: string; section: string };
+type PyramidVertex = { id: string; label: string; full: string; section: string };
 
-const NODES: CubeVertex[] = [
+const NODES: PyramidVertex[] = [
   { id: 'intro',        label: '0', full: 'Intro',        section: '#intro' },
   { id: 'experience',   label: '1', full: 'Experience',   section: '#experience' },
   { id: 'technologies', label: '2', full: 'Technologies', section: '#technologies' },
@@ -124,7 +124,7 @@ const BASE_RX = 96;
 const BASE_RY = 22;
 const BASE_ANGLES_DEG = [90, 30, -30, -90, -150, 150]; // clockwise from top
 
-function cubePos(label: string) {
+function pyramidPos(label: string) {
   if (label === '0') return { x: 0, y: APEX_Y, back: false };
   const i = parseInt(label, 10) - 1; // '1'..'6' → 0..5
   const rad = (BASE_ANGLES_DEG[i] * Math.PI) / 180;
@@ -152,9 +152,9 @@ const EDGES: Array<{ a: string; b: string; kind: 'front' | 'back' | 'connector' 
   return out;
 })();
 
-// ─── Cube3D component ────────────────────────────────────────────────
+// ─── Pyramid3D component ────────────────────────────────────────────────
 
-type CubeProps = {
+type PyramidProps = {
   size: number;
   active?: string | null;
   showLabels?: boolean;
@@ -164,49 +164,49 @@ type CubeProps = {
   className?: string;
 };
 
-function Cube3D({ size, active, showLabels, interactive, building, onNodeClick, className }: CubeProps) {
-  const positions = NODES.reduce((acc, n) => { acc[n.id] = cubePos(n.label); return acc; }, {} as Record<string, ReturnType<typeof cubePos>>);
+function Pyramid3D({ size, active, showLabels, interactive, building, onNodeClick, className }: PyramidProps) {
+  const positions = NODES.reduce((acc, n) => { acc[n.id] = pyramidPos(n.label); return acc; }, {} as Record<string, ReturnType<typeof pyramidPos>>);
 
   return (
     <svg
       width={size}
       height={size}
       viewBox="-140 -140 280 280"
-      className={`cube ${building ? 'is-building' : ''} ${className ?? ''}`}
+      className={`pyramid ${building ? 'is-building' : ''} ${className ?? ''}`}
       aria-hidden="true"
     >
-      <g className="cube-edges">
+      <g className="pyramid-edges">
         {EDGES.map((e, i) => {
           const pa = positions[e.a], pb = positions[e.b];
           return (
             <line
               key={i}
               x1={pa.x} y1={pa.y} x2={pb.x} y2={pb.y}
-              className={`cube-edge cube-edge-${e.kind}`}
+              className={`pyramid-edge pyramid-edge-${e.kind}`}
               pathLength={1}
               style={{ ['--ei' as string]: i } as React.CSSProperties}
             />
           );
         })}
       </g>
-      <g className="cube-nodes">
+      <g className="pyramid-nodes">
         {NODES.map((n, i) => {
           const p = positions[n.id];
           const isActive = active === n.id;
           return (
             <g
               key={n.id}
-              className={`cube-node-group ${p.back ? 'is-back' : 'is-front'} ${isActive ? 'is-active' : ''} ${interactive ? 'is-interactive' : ''}`}
+              className={`pyramid-node-group ${p.back ? 'is-back' : 'is-front'} ${isActive ? 'is-active' : ''} ${interactive ? 'is-interactive' : ''}`}
               style={{ ['--tx' as string]: `${p.x}px`, ['--ty' as string]: `${p.y}px`, ['--ni' as string]: i } as React.CSSProperties}
               onClick={interactive && onNodeClick ? (e) => { e.stopPropagation(); onNodeClick(n.id); } : undefined}
             >
-              <circle cx="0" cy="0" r={p.back ? 3.4 : 4.4} className="cube-node" />
-              {interactive && <circle cx="0" cy="0" r={14} className="cube-node-hit" />}
+              <circle cx="0" cy="0" r={p.back ? 3.4 : 4.4} className="pyramid-node" />
+              {interactive && <circle cx="0" cy="0" r={14} className="pyramid-node-hit" />}
               {showLabels && (
                 <text
                   x="0"
                   y={p.back ? -10 : 14}
-                  className="cube-label"
+                  className="pyramid-label"
                   textAnchor="middle"
                   dominantBaseline={p.back ? 'auto' : 'hanging'}
                 >
@@ -221,18 +221,18 @@ function Cube3D({ size, active, showLabels, interactive, building, onNodeClick, 
   );
 }
 
-// ─── CubeNav: single morphing widget (loading → docked → expanded) ──
+// ─── PyramidNav: single morphing widget (loading → docked → expanded) ──
 
-type CubeMode = 'loading' | 'docked' | 'expanded';
+type PyramidMode = 'loading' | 'docked' | 'expanded';
 
-function CubeNav({
+function PyramidNav({
   mode,
   active,
   onExpand,
   onCollapse,
   onNodeClick,
 }: {
-  mode: CubeMode;
+  mode: PyramidMode;
   active: string | null;
   onExpand: () => void;
   onCollapse: () => void;
@@ -253,14 +253,14 @@ function CubeNav({
   return (
     <div
       ref={ref}
-      className={`cube-nav is-${mode}`}
+      className={`pyramid-nav is-${mode}`}
       role={mode === 'docked' ? 'button' : undefined}
-      aria-label={mode === 'docked' ? 'Open navigation cube' : 'Section navigation cube'}
+      aria-label={mode === 'docked' ? 'Open navigation pyramid' : 'Section navigation pyramid'}
       tabIndex={mode === 'docked' ? 0 : -1}
       onClick={() => { if (mode === 'docked') onExpand(); }}
       onKeyDown={(e) => { if (mode === 'docked' && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onExpand(); } }}
     >
-      <Cube3D
+      <Pyramid3D
         size={280}
         active={active}
         showLabels={mode !== 'docked'}
@@ -268,12 +268,12 @@ function CubeNav({
         building={mode === 'loading'}
         onNodeClick={onNodeClick}
       />
-      {mode === 'docked' && <span className="cube-nav-hint">W₆</span>}
+      {mode === 'docked' && <span className="pyramid-nav-hint">W₆</span>}
     </div>
   );
 }
 
-// ─── LoadingScreen: just the dark overlay (cube lives in CubeNav) ────
+// ─── LoadingScreen: just the dark overlay (pyramid lives in PyramidNav) ────
 
 const VISIT_KEY = 'portfolio_first_visit_v1';
 
@@ -390,12 +390,12 @@ function VisitorMap() {
   );
 }
 
-// ─── Section header (tiny cube indicator) ────────────────────────────
+// ─── Section header (tiny pyramid indicator) ────────────────────────────
 
 function SectionHead({ index, title, subtitle, nodeId }: { index: string; title: string; subtitle: string; nodeId: string }) {
   return (
     <header className="sect-head">
-      <div className="sect-mini"><Cube3D size={56} active={nodeId} /></div>
+      <div className="sect-mini"><Pyramid3D size={56} active={nodeId} /></div>
       <div className="sect-meta">
         <div className="sect-row">
           <span className="sect-index">v_{index}</span>
@@ -417,14 +417,33 @@ const EXP_TAB_SUBTITLE: Record<ExpTab, string> = {
   programs: 'covering set',
 };
 
+const EXP_TAB_ORDER: ExpTab[] = ['work', 'involvement', 'programs'];
+
 export default function Home() {
-  const [cubeMode, setCubeMode] = useState<CubeMode>('loading');
+  const [pyramidMode, setPyramidMode] = useState<PyramidMode>('loading');
   const [overlayFading, setOverlayFading] = useState(false);
   const [showOverlay, setShowOverlay] = useState(true);
   const [activeSection, setActiveSection] = useState<string>('intro');
   const [expTab, setExpTab] = useState<ExpTab>('work');
 
-  const activeCubeVertex = activeSection;
+  const activePyramidVertex = activeSection;
+
+  // Experience carousel: viewport height animates to match the active panel.
+  const expIdx = EXP_TAB_ORDER.indexOf(expTab);
+  const expViewportRef = useRef<HTMLDivElement>(null);
+  const expPanelRefs = useRef<(HTMLDivElement | null)[]>([null, null, null]);
+
+  useEffect(() => {
+    const measure = () => {
+      const panel = expPanelRefs.current[expIdx];
+      const viewport = expViewportRef.current;
+      if (!panel || !viewport) return;
+      viewport.style.height = `${panel.offsetHeight}px`;
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [expIdx]);
 
   // First-visit gating
   useEffect(() => {
@@ -435,12 +454,12 @@ export default function Home() {
     try { isReturning = !!localStorage.getItem(VISIT_KEY); } catch {}
 
     if (isReturning) {
-      setCubeMode('docked');
+      setPyramidMode('docked');
       setShowOverlay(false);
     } else {
       // Building animation duration ~2500ms, then transition to docked + fade overlay
       buildTimer = window.setTimeout(() => {
-        setCubeMode('docked');
+        setPyramidMode('docked');
         setOverlayFading(true);
       }, 2800);
       fadeTimer = window.setTimeout(() => {
@@ -456,7 +475,7 @@ export default function Home() {
   }, []);
 
   // Scroll-spy: track which section is in view. Includes #technologies
-  // (a section without a cube vertex) so its mini cube renders with no
+  // (a section without a pyramid vertex) so its mini pyramid renders with no
   // highlight while the user is reading it.
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
@@ -484,7 +503,7 @@ export default function Home() {
 
   const handleNodeClick = useCallback((id: string) => {
     jumpTo(id);
-    setCubeMode('docked');
+    setPyramidMode('docked');
   }, [jumpTo]);
 
   return (
@@ -506,51 +525,51 @@ export default function Home() {
         html { scroll-behavior: smooth; background: var(--bg); }
         body { background: var(--bg); color: var(--text); font-family: var(--serif); font-size: 16px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
 
-        /* ── Cube base ── */
-        .cube { display: block; overflow: visible; }
-        .cube-edge { fill: none; stroke-width: 1.2; transition: stroke-opacity 0.3s; }
-        .cube-edge-front { stroke: oklch(0.40 0.008 255); }
-        .cube-edge-back { stroke: oklch(0.30 0.008 255); stroke-dasharray: 2 2; opacity: 0.7; }
-        .cube-edge-connector { stroke: oklch(0.34 0.008 255); }
-        .cube-node-group { transform: translate(var(--tx), var(--ty)); transition: transform 0s; }
-        .cube-node { fill: var(--muted); transition: fill 0.2s, r 0.2s; }
-        .cube-node-group.is-front .cube-node { fill: oklch(0.78 0.006 255); }
-        .cube-node-group.is-back .cube-node { fill: oklch(0.55 0.006 255); }
-        .cube-node-group.is-active .cube-node { fill: var(--accent); r: 5.5; }
-        .cube-node-group.is-interactive .cube-node-hit { fill: transparent; cursor: pointer; }
-        .cube-node-group.is-interactive:hover .cube-node { fill: var(--text); }
-        .cube-label { font-family: var(--mono); font-size: 9px; fill: var(--muted); letter-spacing: 0.04em; pointer-events: none; transition: opacity 0.3s, fill 0.2s; }
-        .cube-node-group.is-active .cube-label { fill: var(--text); }
+        /* ── Pyramid base ── */
+        .pyramid { display: block; overflow: visible; }
+        .pyramid-edge { fill: none; stroke-width: 1.2; transition: stroke-opacity 0.3s; }
+        .pyramid-edge-front { stroke: oklch(0.40 0.008 255); }
+        .pyramid-edge-back { stroke: oklch(0.30 0.008 255); stroke-dasharray: 2 2; opacity: 0.7; }
+        .pyramid-edge-connector { stroke: oklch(0.34 0.008 255); }
+        .pyramid-node-group { transform: translate(var(--tx), var(--ty)); transition: transform 0s; }
+        .pyramid-node { fill: var(--muted); transition: fill 0.2s, r 0.2s; }
+        .pyramid-node-group.is-front .pyramid-node { fill: oklch(0.78 0.006 255); }
+        .pyramid-node-group.is-back .pyramid-node { fill: oklch(0.55 0.006 255); }
+        .pyramid-node-group.is-active .pyramid-node { fill: var(--accent); r: 5.5; }
+        .pyramid-node-group.is-interactive .pyramid-node-hit { fill: transparent; cursor: pointer; }
+        .pyramid-node-group.is-interactive:hover .pyramid-node { fill: var(--text); }
+        .pyramid-label { font-family: var(--mono); font-size: 9px; fill: var(--muted); letter-spacing: 0.04em; pointer-events: none; transition: opacity 0.3s, fill 0.2s; }
+        .pyramid-node-group.is-active .pyramid-label { fill: var(--text); }
 
         /* ── Build-in animation (plays once on first visit) ── */
-        .cube.is-building .cube-node-group {
-          animation: cubeNodeIn 900ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+        .pyramid.is-building .pyramid-node-group {
+          animation: pyramidNodeIn 900ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
           animation-delay: calc(var(--ni) * 60ms + 100ms);
         }
-        .cube.is-building .cube-edge {
-          animation: cubeEdgeIn 600ms ease-out backwards;
+        .pyramid.is-building .pyramid-edge {
+          animation: pyramidEdgeIn 600ms ease-out backwards;
           animation-delay: calc(var(--ei) * 35ms + 1100ms);
         }
-        .cube.is-building .cube-label {
-          animation: cubeLabelIn 500ms ease-out backwards;
+        .pyramid.is-building .pyramid-label {
+          animation: pyramidLabelIn 500ms ease-out backwards;
           animation-delay: 1900ms;
         }
-        @keyframes cubeNodeIn {
+        @keyframes pyramidNodeIn {
           0%   { opacity: 0; transform: translate(0px, 0px) scale(0.6); }
           40%  { opacity: 1; }
           100% { opacity: 1; transform: translate(var(--tx), var(--ty)) scale(1); }
         }
-        @keyframes cubeEdgeIn {
+        @keyframes pyramidEdgeIn {
           from { stroke-dasharray: 1; stroke-dashoffset: 1; }
           to   { stroke-dasharray: 1; stroke-dashoffset: 0; }
         }
-        @keyframes cubeLabelIn {
+        @keyframes pyramidLabelIn {
           from { opacity: 0; transform: translateY(2px); }
           to   { opacity: 1; transform: translateY(0); }
         }
 
-        /* ── CubeNav: morphing widget ── */
-        .cube-nav {
+        /* ── PyramidNav: morphing widget ── */
+        .pyramid-nav {
           position: fixed;
           top: 18px;
           right: 18px;
@@ -561,24 +580,24 @@ export default function Home() {
           transition: transform 760ms cubic-bezier(0.16, 1, 0.3, 1);
           will-change: transform;
         }
-        .cube-nav.is-loading {
+        .pyramid-nav.is-loading {
           /* Center on screen, full scale. Translate from top-right anchor
-             to viewport center, accounting for cube half-size (140px). */
+             to viewport center, accounting for pyramid half-size (140px). */
           transform: translate(calc(-50vw + 158px), calc(50vh - 158px)) scale(1);
           z-index: 1001;
         }
-        .cube-nav.is-docked {
+        .pyramid-nav.is-docked {
           transform: scale(0.26);
           cursor: pointer;
         }
-        .cube-nav.is-docked:hover { transform: scale(0.30); }
-        .cube-nav.is-docked:focus-visible { outline: none; transform: scale(0.30); }
-        .cube-nav.is-expanded {
+        .pyramid-nav.is-docked:hover { transform: scale(0.30); }
+        .pyramid-nav.is-docked:focus-visible { outline: none; transform: scale(0.30); }
+        .pyramid-nav.is-expanded {
           transform: scale(0.82);
         }
-        .cube-nav .cube-label { opacity: 1; }
-        .cube-nav.is-docked .cube-label { opacity: 0; }
-        .cube-nav-hint {
+        .pyramid-nav .pyramid-label { opacity: 1; }
+        .pyramid-nav.is-docked .pyramid-label { opacity: 0; }
+        .pyramid-nav-hint {
           position: absolute; right: 0; top: -22px;
           font-family: var(--mono); font-size: 9px; color: var(--muted);
           letter-spacing: 0.1em; opacity: 0;
@@ -587,9 +606,9 @@ export default function Home() {
           pointer-events: none;
           transition: opacity 0.2s;
         }
-        .cube-nav.is-docked .cube-nav-hint { opacity: 0.8; }
+        .pyramid-nav.is-docked .pyramid-nav-hint { opacity: 0.8; }
 
-        /* ── Loader overlay (fades out as cube shrinks) ── */
+        /* ── Loader overlay (fades out as pyramid shrinks) ── */
         .loader-bg {
           position: fixed; inset: 0; z-index: 1000;
           background: var(--bg);
@@ -600,15 +619,15 @@ export default function Home() {
         .loader-bg.is-fading { opacity: 0; pointer-events: none; }
         html.returning .loader-bg { display: none; }
 
-        /* Returning visitors: skip the build-in animation and snap cube straight to docked */
-        html.returning .cube.is-building .cube-node-group,
-        html.returning .cube.is-building .cube-edge,
-        html.returning .cube.is-building .cube-label { animation: none !important; }
-        html.returning .cube-nav.is-loading { transform: scale(0.26); cursor: pointer; }
-        html.returning .cube-nav.is-loading:hover { transform: scale(0.30); }
-        html.returning .cube-nav.is-loading .cube-label { opacity: 0; }
-        html.returning .cube-nav.is-loading .cube-node-group { transform: translate(var(--tx), var(--ty)); opacity: 1; }
-        html.returning .cube-nav.is-loading .cube-edge { stroke-dashoffset: 0; }
+        /* Returning visitors: skip the build-in animation and snap pyramid straight to docked */
+        html.returning .pyramid.is-building .pyramid-node-group,
+        html.returning .pyramid.is-building .pyramid-edge,
+        html.returning .pyramid.is-building .pyramid-label { animation: none !important; }
+        html.returning .pyramid-nav.is-loading { transform: scale(0.26); cursor: pointer; }
+        html.returning .pyramid-nav.is-loading:hover { transform: scale(0.30); }
+        html.returning .pyramid-nav.is-loading .pyramid-label { opacity: 0; }
+        html.returning .pyramid-nav.is-loading .pyramid-node-group { transform: translate(var(--tx), var(--ty)); opacity: 1; }
+        html.returning .pyramid-nav.is-loading .pyramid-edge { stroke-dashoffset: 0; }
         .loader-stats {
           position: absolute; bottom: 18%;
           font-family: var(--mono); font-size: 12px; color: var(--muted);
@@ -621,7 +640,7 @@ export default function Home() {
         .loader-stats .ls-4 { animation-delay: 2650ms; font-style: italic; font-family: var(--serif); letter-spacing: 0.02em; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* ── Nav (text only, cube is the visual graph) ── */
+        /* ── Nav (text only, pyramid is the visual graph) ── */
         nav { position: sticky; top: 0; z-index: 50; background: oklch(0.11 0.008 255 / 0.9); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); padding: 0 24px; }
         .nav-inner { display: flex; align-items: center; justify-content: space-between; max-width: var(--max); margin: 0 auto; height: 56px; gap: 24px; }
         .nav-brand { display: flex; align-items: baseline; gap: 10px; color: var(--text); text-decoration: none; }
@@ -632,7 +651,7 @@ export default function Home() {
         main { max-width: var(--max); margin: 0 auto; padding: 0 24px 120px; }
         section { padding-top: 88px; scroll-margin-top: 64px; }
 
-        /* ── Hero (no graph here; cube widget handles that) ── */
+        /* ── Hero (no graph here; pyramid widget handles that) ── */
         .hero { padding-top: 64px; }
         .hero h1 { font-size: 32px; font-weight: 400; letter-spacing: -0.01em; margin-bottom: 6px; }
         .hero .role { font-family: var(--mono); font-size: 12px; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 32px; }
@@ -647,7 +666,7 @@ export default function Home() {
         /* ── Section headers ── */
         .sect-head { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
         .sect-mini { flex-shrink: 0; width: 56px; height: 56px; opacity: 0.9; }
-        .sect-mini .cube-label { display: none; }
+        .sect-mini .pyramid-label { display: none; }
         .sect-meta { display: flex; flex-direction: column; gap: 2px; flex: 1; }
         .sect-row { display: flex; align-items: baseline; gap: 12px; }
         .sect-index { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 0.06em; }
@@ -672,6 +691,12 @@ export default function Home() {
         .tab { padding: 7px 14px; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--border); border-radius: 999px; cursor: pointer; background: transparent; transition: color 0.15s, border-color 0.15s, background 0.15s; }
         .tab:hover { color: var(--text); border-color: oklch(0.36 0.008 255); }
         .tab.is-active { color: var(--text); border-color: var(--accent); background: oklch(0.16 0.008 255); }
+
+        /* ── Experience carousel ── */
+        .carousel { overflow: hidden; transition: height 360ms cubic-bezier(0.32, 0.72, 0.34, 1.0); }
+        .carousel-track { display: flex; align-items: flex-start; transition: transform 380ms cubic-bezier(0.32, 0.72, 0.34, 1.0); will-change: transform; }
+        .carousel-panel { flex: 0 0 100%; min-width: 100%; opacity: 1; transition: opacity 240ms ease; }
+        .carousel-panel[aria-hidden="true"] { opacity: 0.35; }
 
         /* ── Technologies ── */
         .tech-list { display: flex; flex-direction: column; gap: 20px; }
@@ -741,7 +766,7 @@ export default function Home() {
           .hero h1 { font-size: 26px; }
           .sect-head { gap: 12px; }
           .sect-mini { width: 44px; height: 44px; }
-          .cube-nav.is-expanded { transform: scale(0.62); }
+          .pyramid-nav.is-expanded { transform: scale(0.62); }
           .contact-grid { grid-template-columns: 1fr; }
           footer { flex-direction: column; gap: 16px; }
         }
@@ -749,11 +774,11 @@ export default function Home() {
 
       {showOverlay && <LoadingOverlay fading={overlayFading} />}
 
-      <CubeNav
-        mode={cubeMode}
-        active={activeCubeVertex}
-        onExpand={() => setCubeMode('expanded')}
-        onCollapse={() => setCubeMode('docked')}
+      <PyramidNav
+        mode={pyramidMode}
+        active={activePyramidVertex}
+        onExpand={() => setPyramidMode('expanded')}
+        onCollapse={() => setPyramidMode('docked')}
         onNodeClick={handleNodeClick}
       />
 
@@ -764,7 +789,7 @@ export default function Home() {
             <span className="nav-handle">@chapis</span>
           </a>
           <span className="nav-current">
-            {(NODES.find(n => n.id === activeCubeVertex)?.full ?? '').toLowerCase()}
+            {(NODES.find(n => n.id === activePyramidVertex)?.full ?? '').toLowerCase()}
           </span>
         </div>
       </nav>
@@ -783,7 +808,7 @@ export default function Home() {
           <p className="lede">I have always been interested in tech and engineering a better world. After dozens of summer camps I knew I wanted to be an engineer, and after time interning I knew I wanted to be in product.</p>
           <p className="lede">I am passionate about Social Innovation, Entrepreneurship and International Travel. I am a Cincinnati Bengals, Ohio State Buckeyes, Liverpool FC and Denver Nuggets fan.</p>
           <p className="lede">Currently studying <strong>Computer Science and Engineering + Theoretical Mathematics</strong> at <strong>The Ohio State University</strong>, with a minor in Education.</p>
-          <p className="lede" style={{ marginTop: 16 }}>I am always excited to connect — feel free to reach out and add an edge to the graph. <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--muted)' }}>(↗ cube on the right)</span></p>
+          <p className="lede" style={{ marginTop: 16 }}>I am always excited to connect — feel free to reach out and add an edge to the graph. <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--muted)' }}>(↗ pyramid on the right)</span></p>
 
           <a href="https://cal.com/alonzoji" target="_blank" rel="noopener" className="cta">Schedule a call →</a>
         </section>
@@ -808,57 +833,61 @@ export default function Home() {
               </button>
             ))}
           </div>
-          {expTab === 'work' && (
-            <div className="adj-list">
-              {experience.map((e, i) => (
-                <div key={i} className="adj-row">
-                  <div className="adj-logo"><img src={e.logo} alt={e.name} /></div>
-                  <span className="adj-arrow">→</span>
-                  <div className="adj-body">
-                    <div className="adj-head">
-                      <span className="adj-name">{e.name}</span>
-                      <span className="adj-year">{e.year}</span>
+          <div ref={expViewportRef} className="carousel">
+            <div className="carousel-track" style={{ transform: `translateX(-${expIdx * 100}%)` }}>
+              <div ref={el => { expPanelRefs.current[0] = el; }} className="carousel-panel" aria-hidden={expTab !== 'work'}>
+                <div className="adj-list">
+                  {experience.map((e, i) => (
+                    <div key={i} className="adj-row">
+                      <div className="adj-logo"><img src={e.logo} alt={e.name} /></div>
+                      <span className="adj-arrow">→</span>
+                      <div className="adj-body">
+                        <div className="adj-head">
+                          <span className="adj-name">{e.name}</span>
+                          <span className="adj-year">{e.year}</span>
+                        </div>
+                        <span className="adj-role">{e.role}</span>
+                      </div>
                     </div>
-                    <span className="adj-role">{e.role}</span>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          )}
-          {expTab === 'involvement' && (
-            <div className="adj-list">
-              {involvement.map((e, i) => (
-                <div key={i} className="adj-row">
-                  <div className="adj-logo"><img src={e.logo} alt={e.name} /></div>
-                  <span className="adj-arrow">→</span>
-                  <div className="adj-body">
-                    <div className="adj-head">
-                      <span className="adj-name">{e.name}</span>
-                      <span className="adj-year">{e.year}</span>
+              </div>
+              <div ref={el => { expPanelRefs.current[1] = el; }} className="carousel-panel" aria-hidden={expTab !== 'involvement'}>
+                <div className="adj-list">
+                  {involvement.map((e, i) => (
+                    <div key={i} className="adj-row">
+                      <div className="adj-logo"><img src={e.logo} alt={e.name} /></div>
+                      <span className="adj-arrow">→</span>
+                      <div className="adj-body">
+                        <div className="adj-head">
+                          <span className="adj-name">{e.name}</span>
+                          <span className="adj-year">{e.year}</span>
+                        </div>
+                        <span className="adj-role">{e.role}</span>
+                      </div>
                     </div>
-                    <span className="adj-role">{e.role}</span>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          )}
-          {expTab === 'programs' && (
-            <div className="adj-list">
-              {programs.map((e, i) => (
-                <div key={i} className="adj-row">
-                  <div className="adj-logo"><img src={e.logo} alt={e.name} /></div>
-                  <span className="adj-arrow">→</span>
-                  <div className="adj-body">
-                    <div className="adj-head">
-                      <span className="adj-name">{e.program}</span>
-                      <span className="adj-year">{e.year.split(' ').pop()}</span>
+              </div>
+              <div ref={el => { expPanelRefs.current[2] = el; }} className="carousel-panel" aria-hidden={expTab !== 'programs'}>
+                <div className="adj-list">
+                  {programs.map((e, i) => (
+                    <div key={i} className="adj-row">
+                      <div className="adj-logo"><img src={e.logo} alt={e.name} /></div>
+                      <span className="adj-arrow">→</span>
+                      <div className="adj-body">
+                        <div className="adj-head">
+                          <span className="adj-name">{e.program}</span>
+                          <span className="adj-year">{e.year.split(' ').pop()}</span>
+                        </div>
+                        <span className="adj-role">{e.name}</span>
+                      </div>
                     </div>
-                    <span className="adj-role">{e.name}</span>
-                  </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
-          )}
+          </div>
         </section>
 
         <section id="technologies">
