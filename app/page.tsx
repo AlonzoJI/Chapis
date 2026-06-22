@@ -53,6 +53,19 @@ type Post = { date: string; title: string; lede?: string; hero?: string; paragra
 
 const posts: Post[] = [
   {
+    date: '2026', title: 'My Favorite Movie: Y Tu Mamá También',
+    hero: '/blog/y-tu-mama-tambien.jpg',
+    paragraphs: [
+      'I came back from Mexico a month ago. Wow, how time passes. I’m still thinking about what Mexico means to me. Watching the World Cup these last few months, it has been on my mind even more. As a Latino, I felt proud walking around Alameda Central and seeing moms, students and teachers, your average Mexicans, protesting the injustice rooted in the violence of Mexico.',
+      'I’ve been thinking about Y Tu Mamá También. I remember first hearing about Alfonso Cuarón and thinking, oh wow that’s cool, that’s my dad’s name, and he just won Best Director at the Oscars. I saw the movie when I was pretty young. Looking back, I didn’t really understand it. I just thought I had to like it because it was Mexican, because it was Latino.',
+      'Coming back from Mexico, I understand it now. The wealth inequity across Latin America. The trauma done to the land and the trauma carried by its people. I’m not going to get into all of it here. If you catch me in person, buy me a beer.',
+      'I’ll leave you with my favorite scene. The beauty and random chaos of Mexico City are like nowhere else in the world, but it’s all underlined by broken hearts. Let me change topics before I ramble. Oaxaca is beautiful. You feel the grandness of José María Velasco Gómez’s art just by opening your eyes. The virgin beaches remind you of a childhood dream of innocence and hope.',
+      'The best scene, for me, is Doña Marta. How rich it must be to be 98 and look back at everything you can call yours. Not what you own in the physical world, but what you remember. The trauma, the violence, the love, the joy. It’s all yours to keep. As a young person, I can only imagine what she saw, and what I hope she was spared. Knowing Mexico, I’m sure violence and injustice are some of the memories she looks back on. I think about the grandmother I never met, and the war, the violence.',
+      'I’m not Mexican, by the way. I’m Guatemalan.',
+      'I’m not Mexican btw, I’m Guatemalan',
+    ],
+  },
+  {
     date: '2026', title: 'The Product Builder',
     hero: 'https://damassets.autodesk.net/content/dam/autodesk/images/customer-stories/long-format-customer-story/hdr-apm-walk-train-thumb-1172x660.png',
     paragraphs: [

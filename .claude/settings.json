@@ -49,7 +49,11 @@
       "Bash(git commit -m 'Rename local Node type to CubeVertex to avoid DOM Node collision *)",
       "WebFetch(domain:www.vamseec.com)",
       "Bash(curl -s -o /tmp/home.html -w \"status:%{http_code}\\\\n\" http://localhost:3000/ && echo \"---\" && grep -oE '\\(role=\"tab\"|class=\"tab\\( is-active\\)?\"|id=\"\\(experience|technologies|involvement|programs\\)\"|class=\"tech-cat\"|tech-cat-name|class=\"tech-cat-items\"|kdb\\\\+/q|Storybook\\\\.js|Aurora DB|Terraform\\)' /tmp/home.html | sort | uniq -c)",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "Bash(mkdir -p public/blog)",
+      "Bash(curl -sL -A \"Mozilla/5.0\" -o public/blog/y-tu-mama-tambien.jpg 'https://preview.redd.it/mu%C3%A9strame-tus-mejores-fotos-de-la-ciudad-v0-e78ajrii8rof1.jpg?width=1080&crop=smart&auto=webp&s=5e926ad2c50a3a3d6d328768e00335708d7e4a93')",
+      "Bash(curl -s -o /tmp/home.html -w \"home:%{http_code}\\\\n\" http://localhost:3000/)",
+      "Bash(curl -s -o /dev/null -w \"image:%{http_code}\\\\n\" http://localhost:3000/blog/y-tu-mama-tambien.jpg)"
     ],
     "additionalDirectories": [
       "/Users/jaredalonzo/Documents/personal_website/chapis/app/api/tiles/[...slug]/public"
