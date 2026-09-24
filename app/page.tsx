@@ -316,9 +316,11 @@ function timeAgo(ts: number) {
   return `${Math.floor(h / 24)}d ago`;
 }
 
-// CARTO Positron tiles served from CARTO's free/anonymous CDN. No auth
-// mechanism exists on this endpoint; the URL is public.
-const CARTO_TILE_URL = 'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png';
+// CARTO Positron tiles. Unkeyed requests get an "API KEY REQUIRED"
+// watermarked tile, so the key must be attached as ?key= (not ?api_key=).
+// Ref: carto.com/basemaps/apikey — one key covers raster + vector basemaps.
+const CARTO_KEY = process.env.NEXT_PUBLIC_CARTO_API_KEY ?? '';
+const CARTO_TILE_URL = `https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png${CARTO_KEY ? `?key=${CARTO_KEY}` : ''}`;
 
 function VisitorMap() {
   const mapRef = useRef<HTMLDivElement>(null);
