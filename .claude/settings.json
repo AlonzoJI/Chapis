@@ -57,7 +57,14 @@
       "Bash(curl -s -w \"\\\\nvisit:%{http_code}\\\\n\" http://localhost:3000/api/visit)",
       "Bash(curl -s -X POST http://localhost:3000/api/visit -H 'content-type: application/json' -d '{\"city\":\"San Francisco\",\"country\":\"US\",\"lat\":37.7749,\"lon\":-122.4194}')",
       "Bash(curl -s -X POST http://localhost:3000/api/visit -H 'content-type: application/json' -d '{\"city\":\"Boston\",\"country\":\"US\",\"lat\":42.36,\"lon\":-71.06}')",
-      "Bash(grep -oE 'api_key=[a-z0-9_]+' /tmp/home.html | head -3; echo \"---client chunks---\"; find .next -name '*.js' -newer .env.local 2>/dev/null | xargs grep -l 'cb1_3w2d_1' 2>/dev/null | head -3)"
+      "Bash(grep -oE 'api_key=[a-z0-9_]+' /tmp/home.html | head -3; echo \"---client chunks---\"; find .next -name '*.js' -newer .env.local 2>/dev/null | xargs grep -l 'cb1_3w2d_1' 2>/dev/null | head -3)",
+      "Bash(curl -sI 'https://a.basemaps.cartocdn.com/light_all/1/0/0@2x.png')",
+      "Bash(curl -sI 'https://a.basemaps.cartocdn.com/light_all/1/0/0@2x.png?api_key=cb1_3w2d_1_796326a018a1aa542aef24dc')",
+      "Bash(curl -s http://localhost:3000/api/visit)",
+      "Bash(curl -s http://localhost:3000/)",
+      "Bash(lsof -ti:3000)",
+      "Bash(xargs cat)",
+      "Bash(curl -sIL https://chapis.me/)"
     ],
     "additionalDirectories": [
       "/Users/jaredalonzo/Documents/personal_website/chapis/app/api/tiles/[...slug]/public"

@@ -316,13 +316,9 @@ function timeAgo(ts: number) {
   return `${Math.floor(h / 24)}d ago`;
 }
 
-// CARTO Positron tiles. Auth key is optional; the CDN accepts anonymous
-// requests, but attaching the account key routes traffic through your
-// account for usage tracking.
-const CARTO_KEY = process.env.NEXT_PUBLIC_CARTO_API_KEY ?? '';
-const CARTO_TILE_URL = CARTO_KEY
-  ? `https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png?api_key=${CARTO_KEY}`
-  : 'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png';
+// CARTO Positron tiles served from CARTO's free/anonymous CDN. No auth
+// mechanism exists on this endpoint; the URL is public.
+const CARTO_TILE_URL = 'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png';
 
 function VisitorMap() {
   const mapRef = useRef<HTMLDivElement>(null);
