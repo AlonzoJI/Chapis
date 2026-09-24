@@ -43,12 +43,6 @@ const projects = [
   { name: 'Curriculum Visualization', desc: 'Interactive 4-year map of OSU CS&E. Hover any course to highlight its full prereq/postreq chain across all 8 semesters.', tags: ['D3', 'Graph traversal'], link: 'https://github.com/cse3901-osu-2026sp-910/hexcode_vis' },
 ];
 
-const techCategories: Array<{ name: string; items: string[] }> = [
-  { name: 'Languages', items: ['C/C++', 'Python', 'TypeScript', 'JavaScript', 'Java', 'Golang', 'Ruby', 'Swift/SwiftUI', 'SQL', 'HTML/CSS', 'kdb+/q'] },
-  { name: 'Frameworks & Libraries', items: ['React', 'Next.js', 'Node.js', 'Flask', 'Django', 'Rails', 'NumPy', 'pandas', 'TailwindCSS', 'Storybook.js', 'discord.js'] },
-  { name: 'Tools & Infrastructure', items: ['Git', 'Docker', 'AWS', 'CI/CD', 'MongoDB', 'PostgreSQL', 'Aurora DB', 'Terraform', 'Jira', 'Agile'] },
-];
-
 type Post = { date: string; title: string; lede?: string; hero?: string; paragraphs: string[] };
 
 const posts: Post[] = [
@@ -113,33 +107,32 @@ const posts: Post[] = [
   },
 ];
 
-// ─── Graph: W₆ wheel (hexagonal pyramid). 7 vertices, 12 edges. ──────
-// Apex = intro; 6 base vertices form a hexagon, one per other page section.
+// ─── Graph: W₅ wheel (pentagonal pyramid). 6 vertices, 10 edges. ─────
+// Apex = intro; 5 base vertices form a pentagon, one per other page section.
 
 type PyramidVertex = { id: string; label: string; full: string; section: string };
 
 const NODES: PyramidVertex[] = [
   { id: 'intro',        label: '0', full: 'Intro',        section: '#intro' },
   { id: 'experience',   label: '1', full: 'Experience',   section: '#experience' },
-  { id: 'technologies', label: '2', full: 'Technologies', section: '#technologies' },
-  { id: 'projects',     label: '3', full: 'Projects',     section: '#projects' },
-  { id: 'writing',      label: '4', full: 'Writing',      section: '#writing' },
-  { id: 'visitor',      label: '5', full: 'Visitor',      section: '#last-visitor' },
-  { id: 'contact',      label: '6', full: 'Contact',      section: '#contact' },
+  { id: 'projects',     label: '2', full: 'Projects',     section: '#projects' },
+  { id: 'writing',      label: '3', full: 'Writing',      section: '#writing' },
+  { id: 'visitor',      label: '4', full: 'Visitor',      section: '#last-visitor' },
+  { id: 'contact',      label: '5', full: 'Contact',      section: '#contact' },
 ];
 
-// Cabinet projection of a hexagonal pyramid: apex above, hexagonal base on
-// a flattened ellipse below. Upper half of the ellipse reads as "back" of
-// the solid, lower half as "front".
+// Cabinet projection of a pentagonal pyramid: apex above, pentagonal base
+// on a flattened ellipse below. Upper half of the ellipse reads as "back"
+// of the solid, lower half as "front".
 const APEX_Y = -94;
 const BASE_CY = 32;
 const BASE_RX = 96;
 const BASE_RY = 22;
-const BASE_ANGLES_DEG = [90, 30, -30, -90, -150, 150]; // clockwise from top
+const BASE_ANGLES_DEG = [90, 18, -54, -126, 162]; // 5 vertices, clockwise from top
 
 function pyramidPos(label: string) {
   if (label === '0') return { x: 0, y: APEX_Y, back: false };
-  const i = parseInt(label, 10) - 1; // '1'..'6' → 0..5
+  const i = parseInt(label, 10) - 1; // '1'..'5' → 0..4
   const rad = (BASE_ANGLES_DEG[i] * Math.PI) / 180;
   return {
     x: BASE_RX * Math.cos(rad),
@@ -148,15 +141,16 @@ function pyramidPos(label: string) {
   };
 }
 
-// 12 edges: 6 spokes (apex → each base vertex) + 6 base-cycle edges.
+// 10 edges: 5 spokes (apex → each base vertex) + 5 base-cycle edges.
 const EDGES: Array<{ a: string; b: string; kind: 'front' | 'back' | 'connector' }> = (() => {
   const out: Array<{ a: string; b: string; kind: 'front' | 'back' | 'connector' }> = [];
   const baseIds = NODES.slice(1).map(n => n.id);
   for (const id of baseIds) out.push({ a: 'intro', b: id, kind: 'connector' });
-  for (let i = 0; i < 6; i++) {
+  const n = baseIds.length;
+  for (let i = 0; i < n; i++) {
     const a = baseIds[i];
-    const b = baseIds[(i + 1) % 6];
-    let diff = BASE_ANGLES_DEG[(i + 1) % 6] - BASE_ANGLES_DEG[i];
+    const b = baseIds[(i + 1) % n];
+    let diff = BASE_ANGLES_DEG[(i + 1) % n] - BASE_ANGLES_DEG[i];
     if (diff > 180) diff -= 360;
     if (diff < -180) diff += 360;
     const midRad = (BASE_ANGLES_DEG[i] + diff / 2) * Math.PI / 180;
@@ -281,7 +275,7 @@ function PyramidNav({
         building={mode === 'loading'}
         onNodeClick={onNodeClick}
       />
-      {mode === 'docked' && <span className="pyramid-nav-hint">W₆</span>}
+      {mode === 'docked' && <span className="pyramid-nav-hint">W₅</span>}
     </div>
   );
 }
@@ -294,18 +288,22 @@ function LoadingOverlay({ fading }: { fading: boolean }) {
   return (
     <div className={`loader-bg ${fading ? 'is-fading' : ''}`} aria-hidden="true">
       <div className="loader-stats" aria-hidden="true">
-        <span className="ls-1">W₆ = (V, E)</span>
-        <span className="ls-2">|V| = 7</span>
-        <span className="ls-3">|E| = 12</span>
+        <span className="ls-1">W₅ = (V, E)</span>
+        <span className="ls-2">|V| = 6</span>
+        <span className="ls-3">|E| = 10</span>
         <span className="ls-4">— booting graph —</span>
       </div>
     </div>
   );
 }
 
-// ─── Visitor Map (unchanged) ──────────────────────────────────────────
+// ─── Visitor Map ──────────────────────────────────────────────────────
+// Shows the CURRENT visitor where the PREVIOUS visitor came from. The
+// server (/api/visit) atomically stores your location and returns whoever
+// visited just before you. First-ever visitor falls back to their own
+// location so the map is never empty.
 
-type StoredVisitor = { city: string; country: string; lat: number; lon: number; ts: number };
+type Visitor = { city: string; country: string; lat: number; lon: number; ts: number };
 
 function timeAgo(ts: number) {
   const s = Math.floor((Date.now() - ts) / 1000);
@@ -318,77 +316,119 @@ function timeAgo(ts: number) {
   return `${Math.floor(h / 24)}d ago`;
 }
 
+// CARTO Positron tiles. Auth key is optional; the CDN accepts anonymous
+// requests, but attaching the account key routes traffic through your
+// account for usage tracking.
+const CARTO_KEY = process.env.NEXT_PUBLIC_CARTO_API_KEY ?? '';
+const CARTO_TILE_URL = CARTO_KEY
+  ? `https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png?api_key=${CARTO_KEY}`
+  : 'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png';
+
 function VisitorMap() {
   const mapRef = useRef<HTMLDivElement>(null);
-  const [status, setStatus] = useState<{ city: string; country: string; ts: number; live: boolean } | null>(null);
+  // "previous" is who to display on the map. "isSelf" means we fell back to
+  // the current visitor's own coordinates because no prior visitor exists.
+  const [previous, setPrevious] = useState<Visitor | null>(null);
+  const [isSelf, setIsSelf] = useState(false);
   const [count, setCount] = useState<number | null>(null);
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let map: any = null;
+
     async function init() {
-      const KEY_LAST = 'portfolio_last_visitor_v2';
-      const getStored = () => { try { const r = localStorage.getItem(KEY_LAST); return r ? JSON.parse(r) : null; } catch { return null; } };
-      const setStored = (d: StoredVisitor) => localStorage.setItem(KEY_LAST, JSON.stringify(d));
-      const stored = getStored();
-      if (stored) setStatus({ city: stored.city, country: stored.country, ts: stored.ts, live: false });
+      // Seed the map with what the server already knows so tiles start loading
+      // before the ipapi round-trip finishes.
+      let seed: Visitor | null = null;
       try {
         const res = await fetch('/api/visit');
-        const { count: globalCount } = await res.json();
-        setCount(globalCount);
+        const data = await res.json();
+        seed = data.previous;
+        if (typeof data.count === 'number') setCount(data.count);
+        if (seed) setPrevious(seed);
       } catch {}
+
       const maplibregl = (await import('maplibre-gl')).default;
       await import('maplibre-gl/dist/maplibre-gl.css');
-      const lat = stored?.lat ?? 39.9;
-      const lon = stored?.lon ?? -82.9;
+
+      const lat = seed?.lat ?? 20;
+      const lon = seed?.lon ?? 0;
+
       map = new maplibregl.Map({
         container: mapRef.current!,
         style: {
           version: 8,
-          sources: { carto: { type: 'raster', tiles: ['https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png'], tileSize: 256, attribution: '© CARTO, © OpenStreetMap contributors' } },
+          sources: { carto: { type: 'raster', tiles: [CARTO_TILE_URL], tileSize: 256, attribution: '© CARTO, © OpenStreetMap contributors' } },
           layers: [{ id: 'carto', type: 'raster', source: 'carto', minzoom: 0, maxzoom: 19 }],
         },
-        center: [lon, lat], zoom: 4, interactive: true, attributionControl: { compact: true },
+        center: [lon, lat],
+        zoom: seed ? 4 : 2,
+        interactive: true,
+        attributionControl: { compact: true },
       });
+
       const addMarker = (lng: number, lt: number) => {
         const el = document.createElement('div');
         el.style.cssText = 'width:10px;height:10px;border-radius:50%;background:#3b82f6;border:2px solid #fff;box-shadow:0 0 0 2px rgba(59,130,246,0.35);cursor:default;';
         new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat([lng, lt]).addTo(map);
       };
-      if (stored) map.on('load', () => addMarker(lon, lat));
+
+      if (seed) map.on('load', () => addMarker(seed!.lon, seed!.lat));
+
+      // Look up the current visitor's own coordinates, then register them as
+      // the latest visitor. The server returns the visitor who came before us.
       try {
         const r = await fetch('https://ipapi.co/json/');
         const d = await r.json();
-        if (d.latitude) {
-          const fresh = { city: d.city || d.region || 'Unknown', country: d.country_code || '??', lat: d.latitude, lon: d.longitude, ts: Date.now() };
-          setStored(fresh);
-          try { const res = await fetch('/api/visit', { method: 'POST' }); const { count: newCount } = await res.json(); setCount(newCount); } catch {}
-          setStatus({ ...fresh, live: true });
-          map.flyTo({ center: [fresh.lon, fresh.lat], zoom: 5, duration: stored ? 1200 : 0 });
-          map.once('idle', () => addMarker(fresh.lon, fresh.lat));
+        if (typeof d.latitude !== 'number') return;
+
+        const me: Omit<Visitor, 'ts'> = {
+          city: d.city || d.region || 'Unknown',
+          country: d.country_code || '??',
+          lat: d.latitude,
+          lon: d.longitude,
+        };
+
+        const res = await fetch('/api/visit', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(me),
+        });
+        const { count: newCount, previous: newPrev } = await res.json();
+        if (typeof newCount === 'number') setCount(newCount);
+
+        const display: Visitor = newPrev ?? { ...me, ts: Date.now() };
+        setPrevious(display);
+        setIsSelf(!newPrev);
+
+        // If the server-returned previous visitor differs from our seed (or
+        // there was no seed), reposition the map.
+        if (!seed || seed.lat !== display.lat || seed.lon !== display.lon) {
+          map.flyTo({ center: [display.lon, display.lat], zoom: 4, duration: seed ? 1200 : 0 });
+          map.once('idle', () => addMarker(display.lon, display.lat));
         }
       } catch {}
     }
+
     init();
     return () => { map?.remove(); };
   }, []);
 
+  const statusLabel = previous
+    ? (isSelf
+        ? <>You’re the first — showing <strong style={{ color: 'var(--text)' }}>your</strong> spot: {previous.city}, {previous.country}</>
+        : <>Last visitor · <strong style={{ color: 'var(--text)' }}>{previous.city}, {previous.country}</strong> · {timeAgo(previous.ts)}</>)
+    : 'Loading…';
+
   return (
     <div style={{ fontFamily: 'var(--mono)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, minHeight: 18 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--muted)' }}>
-          {status ? (
-            <>
-              <span style={{ width: 7, height: 7, borderRadius: '50%', background: status.live ? '#84a844' : '#888', flexShrink: 0, display: 'inline-block' }} />
-              <span>
-                {status.live ? <strong style={{ color: 'var(--text)' }}>{timeAgo(status.ts)}</strong> : timeAgo(status.ts)}
-                <span style={{ color: 'var(--muted)' }}> · {status.city}, {status.country}</span>
-              </span>
-            </>
-          ) : <span style={{ color: 'var(--muted)' }}>Loading…</span>}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, minHeight: 18, gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--muted)', minWidth: 0 }}>
+          <span style={{ width: 7, height: 7, borderRadius: '50%', background: previous ? '#84a844' : '#888', flexShrink: 0, display: 'inline-block' }} />
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{statusLabel}</span>
         </div>
         {count !== null && (
-          <span style={{ fontSize: 10, letterSpacing: '0.12em', color: 'var(--muted)', border: '0.5px solid var(--border)', borderRadius: 20, padding: '3px 10px' }}>
+          <span style={{ fontSize: 10, letterSpacing: '0.12em', color: 'var(--muted)', border: '0.5px solid var(--border)', borderRadius: 20, padding: '3px 10px', flexShrink: 0 }}>
             <span style={{ color: 'var(--text)' }}>{count.toLocaleString()}</span> visitors
           </span>
         )}
@@ -487,9 +527,7 @@ export default function Home() {
     };
   }, []);
 
-  // Scroll-spy: track which section is in view. Includes #technologies
-  // (a section without a pyramid vertex) so its mini pyramid renders with no
-  // highlight while the user is reading it.
+  // Scroll-spy: track which section is in view.
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
@@ -499,7 +537,7 @@ export default function Home() {
         }
       });
     }, { rootMargin: '-40% 0px -55% 0px' });
-    const sectionIds = ['intro', 'experience', 'technologies', 'projects', 'writing', 'last-visitor', 'contact'];
+    const sectionIds = ['intro', 'experience', 'projects', 'writing', 'last-visitor', 'contact'];
     sectionIds.forEach(id => {
       const el = document.getElementById(id);
       if (el) observer.observe(el);
@@ -711,18 +749,6 @@ export default function Home() {
         .carousel-panel { flex: 0 0 100%; min-width: 100%; opacity: 1; transition: opacity 240ms ease; }
         .carousel-panel[aria-hidden="true"] { opacity: 0.35; }
 
-        /* ── Technologies ── */
-        .tech-list { display: flex; flex-direction: column; gap: 20px; }
-        .tech-cat { padding-bottom: 18px; border-bottom: 1px solid var(--border); }
-        .tech-cat:last-child { border-bottom: none; padding-bottom: 0; }
-        .tech-cat-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
-        .tech-cat-name { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; color: var(--text); text-transform: uppercase; }
-        .tech-cat-count { font-family: var(--mono); font-size: 10px; color: var(--muted); }
-        .tech-cat-items { font-family: var(--mono); font-size: 12px; color: var(--muted); letter-spacing: 0.02em; line-height: 1.85; }
-        .tech-cat-items .br { color: oklch(0.40 0.008 255); }
-        .tech-cat-items .tag { color: oklch(0.72 0.006 255); }
-        .tech-cat-items .tag + .tag::before { content: ', '; color: oklch(0.40 0.008 255); }
-
         /* ── Projects ── */
         .proj-list { display: flex; flex-direction: column; }
         .proj-row { display: grid; grid-template-columns: 36px 1fr; gap: 14px; padding: 18px 0; border-bottom: 1px solid var(--border); text-decoration: none; color: inherit; transition: background 0.15s; }
@@ -810,18 +836,17 @@ export default function Home() {
       <main>
         <section id="intro" className="hero">
           <h1>Jared Alonzo</h1>
-          <p className="role">Product + Systems  ·  <b>W₆ = (V, E)</b>  ·  |V|=7, |E|=12</p>
+          <p className="role">Product + Systems  ·  <b>W₅ = (V, E)</b>  ·  |V|=6, |E|=10</p>
 
           <div className="hero-epigraph">
             Mathematicians do not study objects, but the relations between them.
             <span className="attr">— Henri Poincaré</span>
           </div>
 
-          <p className="lede">Welcome. You can call me <strong>Chapis</strong>. I am a first-generation Guatemalan-American who grew up in a low-income environment.</p>
-          <p className="lede">I have always been interested in tech and engineering a better world. After dozens of summer camps I knew I wanted to be an engineer, and after time interning I knew I wanted to be in product.</p>
-          <p className="lede">I am passionate about Social Innovation, Entrepreneurship and International Travel. I am a Cincinnati Bengals, Ohio State Buckeyes, Liverpool FC and Denver Nuggets fan.</p>
+          <p className="lede">Welcome. You can call me <strong>Chapis</strong>. I am a <strong>Product Manager at Autodesk</strong>. I’m a first-generation Guatemalan-American from Cincinnati, Ohio. I am currently based in San Francisco, CA.</p>
+          <p className="lede">I am passionate about Traveling, Gastronomy, Pedagogy and Sports. I am a Cincinnati Bengals, Ohio State Buckeyes, Liverpool FC and Denver Nuggets fan.</p>
           <p className="lede">Currently studying <strong>Computer Science and Engineering + Theoretical Mathematics</strong> at <strong>The Ohio State University</strong>, with a minor in Education.</p>
-          <p className="lede" style={{ marginTop: 16 }}>I am always excited to connect — feel free to reach out and add an edge to the graph. <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--muted)' }}>(↗ pyramid on the right)</span></p>
+          <p className="lede" style={{ marginTop: 16 }}>I am always excited to connect. Feel free to reach out and add an edge to the graph :) <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--muted)' }}>(↗ pyramid on the right)</span></p>
 
           <a href="https://cal.com/alonzoji" target="_blank" rel="noopener" className="cta">Schedule a call →</a>
         </section>
@@ -903,27 +928,8 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="technologies">
-          <SectionHead index="2" title="Technologies" subtitle="working set" nodeId="technologies" />
-          <div className="tech-list">
-            {techCategories.map(cat => (
-              <div key={cat.name} className="tech-cat">
-                <div className="tech-cat-head">
-                  <span className="tech-cat-name">{cat.name}</span>
-                  <span className="tech-cat-count">{cat.items.length}</span>
-                </div>
-                <div className="tech-cat-items">
-                  <span className="br">{'{ '}</span>
-                  {cat.items.map(t => <span key={t} className="tag">{t}</span>)}
-                  <span className="br">{' }'}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
         <section id="projects">
-          <SectionHead index="3" title="Projects" subtitle="adjacency list" nodeId="projects" />
+          <SectionHead index="2" title="Projects" subtitle="adjacency list" nodeId="projects" />
           <div className="proj-list">
             {projects.map((p, i) => (
               <a key={i} className="proj-row" href={p.link || '#'} target={p.link ? '_blank' : '_self'} rel="noopener">
@@ -946,7 +952,7 @@ export default function Home() {
         </section>
 
         <section id="writing">
-          <SectionHead index="4" title="Writing" subtitle="leaf nodes" nodeId="writing" />
+          <SectionHead index="3" title="Writing" subtitle="leaf nodes" nodeId="writing" />
           <div>
             {posts.map((post, i) => (
               <details key={i} className="post">
@@ -968,12 +974,12 @@ export default function Home() {
         </section>
 
         <section id="last-visitor">
-          <SectionHead index="5" title="Last Visitor" subtitle="neighborhood N(v)" nodeId="visitor" />
+          <SectionHead index="4" title="Last Visitor" subtitle="neighborhood N(v)" nodeId="visitor" />
           <VisitorMap />
         </section>
 
         <section id="contact">
-          <SectionHead index="6" title="Contact" subtitle="incident edges" nodeId="contact" />
+          <SectionHead index="5" title="Contact" subtitle="incident edges" nodeId="contact" />
           <p className="contact-intro">If anything here resonated, the easiest way to connect is the link below. I read every message.</p>
           <div className="contact-grid">
             <a className="contact-card" href="https://cal.com/alonzoji" target="_blank" rel="noopener">

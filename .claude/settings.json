@@ -53,7 +53,11 @@
       "Bash(mkdir -p public/blog)",
       "Bash(curl -sL -A \"Mozilla/5.0\" -o public/blog/y-tu-mama-tambien.jpg 'https://preview.redd.it/mu%C3%A9strame-tus-mejores-fotos-de-la-ciudad-v0-e78ajrii8rof1.jpg?width=1080&crop=smart&auto=webp&s=5e926ad2c50a3a3d6d328768e00335708d7e4a93')",
       "Bash(curl -s -o /tmp/home.html -w \"home:%{http_code}\\\\n\" http://localhost:3000/)",
-      "Bash(curl -s -o /dev/null -w \"image:%{http_code}\\\\n\" http://localhost:3000/blog/y-tu-mama-tambien.jpg)"
+      "Bash(curl -s -o /dev/null -w \"image:%{http_code}\\\\n\" http://localhost:3000/blog/y-tu-mama-tambien.jpg)",
+      "Bash(curl -s -w \"\\\\nvisit:%{http_code}\\\\n\" http://localhost:3000/api/visit)",
+      "Bash(curl -s -X POST http://localhost:3000/api/visit -H 'content-type: application/json' -d '{\"city\":\"San Francisco\",\"country\":\"US\",\"lat\":37.7749,\"lon\":-122.4194}')",
+      "Bash(curl -s -X POST http://localhost:3000/api/visit -H 'content-type: application/json' -d '{\"city\":\"Boston\",\"country\":\"US\",\"lat\":42.36,\"lon\":-71.06}')",
+      "Bash(grep -oE 'api_key=[a-z0-9_]+' /tmp/home.html | head -3; echo \"---client chunks---\"; find .next -name '*.js' -newer .env.local 2>/dev/null | xargs grep -l 'cb1_3w2d_1' 2>/dev/null | head -3)"
     ],
     "additionalDirectories": [
       "/Users/jaredalonzo/Documents/personal_website/chapis/app/api/tiles/[...slug]/public"
