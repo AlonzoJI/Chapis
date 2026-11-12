@@ -82,7 +82,8 @@
   color: #f4f1ea;
   font-family: var(--font-mono);
   font-size: 11px;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
   backdrop-filter: blur(6px);
   animation: promptPulse 2.4s ease-in-out infinite;
 }

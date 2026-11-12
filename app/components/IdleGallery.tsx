@@ -6,6 +6,7 @@ import { PAINTINGS, type Painting } from '@/data/collection';
 import {
   ensureRotationClip,
   getMusicState,
+  nudgePlayback,
   getServerMusicState,
   onClipEnd,
   setMuted,
@@ -226,7 +227,9 @@ export default function IdleGallery({ onExit, pinnedId = null }: Props) {
       revealControls();
     };
     const onTouch = (e: TouchEvent) => {
-      if (inGrace() || isOnControls(e.target)) return;
+      if (isOnControls(e.target)) return;
+      nudgePlayback();
+      if (inGrace()) return;
       revealControls();
     };
     const onFullscreenChange = () => { graceUntil.current = performance.now() + GRACE_MS; };

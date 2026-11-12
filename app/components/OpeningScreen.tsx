@@ -9,7 +9,7 @@ import {
   markOpeningSeen,
   subscribeOpeningSeen,
 } from '@/app/lib/openingSeen';
-import { cueClip, stopMusic } from '@/app/lib/music';
+import { nudgePlayback, startOpener, stopMusic } from '@/app/lib/music';
 import styles from './OpeningScreen.module.css';
 
 const FADE_MS = 1200;
@@ -18,10 +18,17 @@ export default function OpeningScreen({ onIdle }: { onIdle: () => void }) {
   const seen = useSyncExternalStore(subscribeOpeningSeen, getOpeningSeen, getOpeningSeenOnServer);
   const [leaving, setLeaving] = useState(false);
 
-  // Sentry lives only on the opening screen: cue it in the player so the
-  // visitor can press play there. Entering the site stops it.
+  // Sentry lives only on the opening screen. Try to autoplay it; if the
+  // browser blocks sound, the first click, tap or key press starts it.
+  // Entering the site stops it.
   useEffect(() => {
-    if (!seen) cueClip(OPENER.song, 'opening');
+    if (seen) return;
+    startOpener();
+    const onFirstKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') nudgePlayback();
+    };
+    window.addEventListener('keydown', onFirstKey);
+    return () => window.removeEventListener('keydown', onFirstKey);
   }, [seen]);
 
   // Keep the page underneath from scrolling while the opening screen is up.
@@ -47,7 +54,13 @@ export default function OpeningScreen({ onIdle }: { onIdle: () => void }) {
   const origin = `${p.focalX * 100}% ${p.focalY * 100}%`;
 
   return (
-    <div className={`${styles.screen} ${leaving ? styles.isLeaving : ''}`}>
+    <div
+      className={`${styles.screen} ${leaving ? styles.isLeaving : ''}`}
+      onPointerDown={e => {
+        // enter and idle have their own jobs; anywhere else starts the music.
+        if (!(e.target instanceof Element && e.target.closest('button'))) nudgePlayback();
+      }}
+    >
       <Image
         src={p.image}
         alt={`${p.title} by ${p.artist}`}

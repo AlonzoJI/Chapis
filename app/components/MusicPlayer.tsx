@@ -34,7 +34,10 @@ export default function MusicPlayer() {
     >
       {music.status === 'blocked' && (
         <p className={styles.prompt}>
-          <span aria-hidden>♪</span> Tap play to start the music
+          <span aria-hidden>♪</span>{' '}
+          {music.mode === 'opening' && !music.needsEmbedTap
+            ? 'Tap anywhere to start the music'
+            : 'Tap ▶ on the player to start the music'}
         </p>
       )}
       <div className={styles.frame}>

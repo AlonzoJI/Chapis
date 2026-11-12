@@ -26,6 +26,8 @@ export type MusicState = {
   muted: boolean;
   /** False once the embed failed to load; callers fall back to timers. */
   available: boolean;
+  /** A tap anywhere already failed to start audio; only the embed's own button will. */
+  needsEmbedTap: boolean;
 };
 
 /** If playback has not started this long after play(), assume the browser blocked it. */
@@ -35,7 +37,14 @@ const WATCHDOG_SLACK_MS = 6000;
 /** End conditions are ignored this long after audio starts, so a seek can land. */
 const SETTLE_MS = 1500;
 
-const SERVER_STATE: MusicState = { mode: 'hidden', status: 'off', song: null, muted: false, available: true };
+const SERVER_STATE: MusicState = {
+  mode: 'hidden',
+  status: 'off',
+  song: null,
+  muted: false,
+  available: true,
+  needsEmbedTap: false,
+};
 
 let state: MusicState = SERVER_STATE;
 const stateListeners = new Set<() => void>();
@@ -234,8 +243,10 @@ export function playClip(song: Song, mode: MusicMode): boolean {
   abandonClip();
   const c: Clip = { song, sentToPlayer: false, started: false, startedAt: 0, endAt: song.endSec, previewRetry: false, cued: false };
   clip = c;
-  armWatchdog(c, clipMs(song) + BLOCKED_AFTER_MS + WATCHDOG_SLACK_MS);
-  setState({ mode, song, status: 'loading' });
+  // On the opening screen a blocked clip waits for the visitor indefinitely;
+  // everywhere else the watchdog guarantees the clip ends.
+  if (mode !== 'opening') armWatchdog(c, clipMs(song) + BLOCKED_AFTER_MS + WATCHDOG_SLACK_MS);
+  setState({ mode, song, status: 'loading', needsEmbedTap: false });
   sendToPlayer(c);
   log('play', song.id, `${song.startSec}-${song.endSec}s`, controller ? '' : '(queued until ready)');
   return true;
@@ -255,6 +266,35 @@ export function cueClip(song: Song, mode: MusicMode): boolean {
   sendToPlayer(c);
   log('cue', song.id, `${song.startSec}-${song.endSec}s`, controller ? '' : '(queued until ready)');
   return true;
+}
+
+/**
+ * Tries to autoplay Sentry on the opening screen. Most browsers block sound
+ * until the visitor interacts, so this usually ends up 'blocked' until
+ * nudgePlayback() runs from their first click, tap or key press.
+ */
+export function startOpener() {
+  return playClip(OPENER.song, 'opening');
+}
+
+/**
+ * Retries play() for a clip that has not started. Call it from a user
+ * gesture (pointerdown, keydown) so the browser allows audio.
+ */
+export function nudgePlayback() {
+  const c = clip;
+  if (!c || c.started || !controller) return;
+  log('retrying play from a user gesture');
+  // A bare play() after a blocked attempt is ignored by the embed; reloading
+  // the track inside the gesture is what the browser accepts.
+  controller.loadUri(c.song.spotifyUri, false, c.previewRetry ? 0 : c.song.startSec);
+  controller.play();
+  window.clearTimeout(c.blockedTimer);
+  if (state.status === 'blocked') setState({ status: 'loading' });
+  c.blockedTimer = window.setTimeout(() => {
+    // Some browsers (notably iPhone Safari) only accept a tap on the embed itself.
+    if (clip === c && !c.started) setState({ status: 'blocked', needsEmbedTap: true });
+  }, BLOCKED_AFTER_MS);
 }
 
 /** Stops audio and hides the card. Used by the close button and when leaving idle. */
