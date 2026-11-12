@@ -37,14 +37,19 @@ const IMAGE_QUALITY = 85;
 let paintingBag: ShuffleBag<Painting> | null = null;
 const nextPainting = () => (paintingBag ??= new ShuffleBag(PAINTINGS)).next();
 
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
 function imageStyle(p: Painting): React.CSSProperties {
   const origin = `${p.focalX * 100}% ${p.focalY * 100}%`;
-  return {
-    objectFit: 'cover',
-    objectPosition: origin,
-    transform: p.zoom === 1 ? undefined : `scale(${p.zoom})`,
-    transformOrigin: origin,
-  };
+  const base: React.CSSProperties = { objectFit: 'cover', objectPosition: origin, transformOrigin: origin };
+  if (p.zoom === 1) return base;
+  if (p.zoom < 1) return { ...base, transform: `scale(${p.zoom})` };
+
+  // Zoomed in: also pull the focal point toward the center of the screen, but
+  // only as far as the extra size allows, so no edge of the painting shows.
+  const shift = (focal: number) =>
+    clamp((0.5 - focal) * 100, -(1 - focal) * (p.zoom - 1) * 100, focal * (p.zoom - 1) * 100);
+  return { ...base, transform: `translate(${shift(p.focalX)}%, ${shift(p.focalY)}%) scale(${p.zoom})` };
 }
 
 // Ken Burns parameters for one painting, passed to CSS as custom properties.
@@ -296,6 +301,10 @@ export default function IdleGallery({ onExit, pinnedId = null }: Props) {
               className={`${styles.motion} ${animating ? (pans ? styles.pan : styles.zoom) : ''}`}
               style={motionStyle(p)}
             >
+              {p.zoom < 1 && (
+                // Zoomed out: a blurred copy of the painting fills the edges.
+                <Image className={styles.backdrop} src={p.image} alt="" fill sizes="50vw" quality={75} loading="eager" />
+              )}
               <Image
                 src={p.image}
                 alt={showing ? `${p.title} by ${p.artist}` : ''}

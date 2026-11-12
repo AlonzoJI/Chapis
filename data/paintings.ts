@@ -20,7 +20,11 @@ export type Painting = {
   height: number;
   focalX: number;
   focalY: number;
-  /** 1 shows the full crop; higher values zoom in around the focal point. */
+  /**
+   * 1 fills the screen. Above 1 zooms in and pulls the focal point toward the
+   * center. Below 1 zooms out to show more of the painting, with a blurred
+   * copy of it filling the edges.
+   */
   zoom: number;
   credit?: string;
 };
@@ -144,9 +148,9 @@ export const PAINTINGS: Painting[] = [
     image: "/art/rivera-man-controller-of-the-universe.jpg",
     width: 2560,
     height: 1920,
-    focalX: 0.5,
-    focalY: 0.5,
-    zoom: 1,
+    focalX: 0.52,
+    focalY: 0.3,
+    zoom: 0.85,
     credit: RIVERA_CREDIT,
   },
   {
@@ -229,7 +233,7 @@ export const PAINTINGS: Painting[] = [
     zoom: 1,
   },
   {
-    // Tight crop on the horse's head, upper left of the canvas.
+    // Tight crop on the horse's head, which faces right at the upper right.
     id: "stubbs-whistlejacket",
     title: "Whistlejacket",
     artist: "George Stubbs",
@@ -238,8 +242,8 @@ export const PAINTINGS: Painting[] = [
     image: "/art/stubbs-whistlejacket.jpg",
     width: 2622,
     height: 3200,
-    focalX: 0.3,
-    focalY: 0.22,
+    focalX: 0.82,
+    focalY: 0.36,
     zoom: 2.4,
   },
 ];

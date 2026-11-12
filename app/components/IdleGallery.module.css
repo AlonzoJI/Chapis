@@ -32,6 +32,12 @@
   will-change: transform;
 }
 
+.backdrop {
+  object-fit: cover;
+  filter: blur(40px) brightness(0.55);
+  transform: scale(1.15);
+}
+
 .zoom {
   animation: kbZoom var(--kb-ms) linear both;
 }
