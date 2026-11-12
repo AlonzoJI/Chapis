@@ -1,0 +1,29 @@
+/* Anchored to the top of the page, not the viewport, so it never sits on
+   top of content while scrolling. */
+.cornerLink {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  z-index: 10;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  background: var(--bg);
+  border: 0;
+  border-radius: 4px;
+  padding: 2px 6px;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.cornerLink:hover,
+.cornerLink:focus-visible {
+  color: var(--text);
+}
+
+@media (max-width: 560px) {
+  .cornerLink {
+    top: 14px;
+    right: 14px;
+  }
+}

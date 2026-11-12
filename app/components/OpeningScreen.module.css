@@ -32,7 +32,7 @@
   position: absolute;
   top: 20px;
   left: 24px;
-  font-family: var(--mono);
+  font-family: var(--font-mono);
   font-size: 12px;
   letter-spacing: 0.06em;
   text-shadow: 0 1px 8px rgb(0 0 0 / 0.45);
@@ -47,7 +47,7 @@
 }
 
 .button {
-  font-family: var(--mono);
+  font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.04em;
   color: inherit;

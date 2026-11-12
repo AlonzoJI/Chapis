@@ -1,1 +1,41 @@
 @import "tailwindcss";
+
+/* Quiet, paper-like palette. The paintings carry the colour. */
+:root {
+  --bg: #faf9f6;
+  --text: #1c1b19;
+  --muted: #6b6862;
+  --faint: #a3a09a;
+  --rule: #e6e3dc;
+  --tile: #efede8;
+  --column: 600px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #141412;
+    --text: #e9e6df;
+    --muted: #9b978f;
+    --faint: #6a675f;
+    --rule: #2a2925;
+    --tile: #23221f;
+  }
+}
+
+html {
+  background: var(--bg);
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
