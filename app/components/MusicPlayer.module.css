@@ -1,0 +1,115 @@
+.card {
+  position: fixed;
+  width: 300px;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.visible {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+/* Main site: bottom right, under the opening screen so it is revealed as the
+   painting fades out. */
+.docked {
+  right: 16px;
+  bottom: 16px;
+  z-index: 1400;
+}
+
+/* Idle gallery: bottom right, beside the caption, above the overlay. */
+.gallery {
+  right: 20px;
+  bottom: 16px;
+  z-index: 2100;
+}
+
+.frame {
+  position: relative;
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgb(0 0 0 / 0.18);
+  background: #282828;
+}
+.embed {
+  height: 80px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.embed :global(iframe) {
+  display: block;
+  border: 0;
+}
+
+/* Sits just above the card so it never covers Spotify's own controls or logo. */
+.close {
+  position: absolute;
+  top: -28px;
+  right: 0;
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 0.55);
+  color: #fff;
+  font-size: 15px;
+  line-height: 22px;
+  cursor: pointer;
+}
+.close:hover,
+.close:focus-visible {
+  background: rgb(0 0 0 / 0.8);
+}
+
+/* Shown when the browser blocks audio (usually iPhone Safari): an invitation,
+   not an error. */
+.prompt {
+  margin-bottom: 8px;
+  padding: 6px 12px;
+  width: fit-content;
+  margin-left: auto;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.6);
+  color: #f4f1ea;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  backdrop-filter: blur(6px);
+  animation: promptPulse 2.4s ease-in-out infinite;
+}
+@keyframes promptPulse {
+  0%, 100% { opacity: 0.75; }
+  50% { opacity: 1; }
+}
+
+@media (max-width: 560px) {
+  .card {
+    left: 16px;
+    right: 16px;
+    width: auto;
+  }
+  /* Top of the screen in the gallery so the caption stays readable. */
+  .gallery {
+    left: 16px;
+    right: 16px;
+    top: 16px;
+    bottom: auto;
+  }
+  .gallery .prompt {
+    margin: 8px 0 0 auto;
+  }
+  .gallery .frame {
+    order: -1;
+  }
+  .gallery {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card { transition: none; }
+  .prompt { animation: none; }
+}

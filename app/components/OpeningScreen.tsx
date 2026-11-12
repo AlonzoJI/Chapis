@@ -9,6 +9,7 @@ import {
   markOpeningSeen,
   subscribeOpeningSeen,
 } from '@/app/lib/openingSeen';
+import { playClip } from '@/app/lib/music';
 import styles from './OpeningScreen.module.css';
 
 const FADE_MS = 1200;
@@ -30,9 +31,11 @@ export default function OpeningScreen({ onIdle }: { onIdle: () => void }) {
 
   const enter = () => {
     if (leaving) return;
+    // Must run inside the click handler: browsers only allow audio to start
+    // from a user gesture. The player docks bottom right once the fade ends.
+    playClip(OPENER.song, 'docked');
     setLeaving(true);
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    // "Sentry" (OPENER.song) starts here once music is wired up.
     window.setTimeout(markOpeningSeen, reduced ? 0 : FADE_MS);
   };
 

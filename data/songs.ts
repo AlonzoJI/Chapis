@@ -20,7 +20,9 @@ export const OPENER_SONG: Song = {
   id: "earl-alchemist-sentry",
   title: "Sentry",
   artist: "Earl Sweatshirt & The Alchemist feat. MIKE",
-  spotifyUri: PLACEHOLDER_URI,
+  // Found by search; the embed shows "Hip-Hop Big Ones" art, so this may be a
+  // compilation copy. Swap in the VOIR DIRE album URI if you prefer that one.
+  spotifyUri: "spotify:track:2BToiLz6TkBEfxaQoNLx1o",
   startSec: 0,
   endSec: 30,
 };
@@ -48,7 +50,7 @@ export const SONGS: Song[] = [
   { id: "gibbs-blackest-in-the-room", title: "Blackest in the Room", artist: "Freddie Gibbs", spotifyUri: PLACEHOLDER_URI, startSec: 0, endSec: 30 },
   { id: "boldy-alchemist-great-adventures", title: "Great Adventures", artist: "Boldy James & The Alchemist", spotifyUri: PLACEHOLDER_URI, startSec: 0, endSec: 30 },
   { id: "alchemist-ocean-prime", title: "Ocean Prime", artist: "The Alchemist feat. Boldy James", spotifyUri: PLACEHOLDER_URI, startSec: 0, endSec: 30 },
-  { id: "gang-starr-mass-appeal", title: "Mass Appeal", artist: "Gang Starr", spotifyUri: PLACEHOLDER_URI, startSec: 0, endSec: 30 },
+  { id: "gang-starr-mass-appeal", title: "Mass Appeal", artist: "Gang Starr", spotifyUri: "spotify:track:3lGBvPUgO7MJltUnBlOpe9", startSec: 0, endSec: 30 },
   { id: "gza-4th-chamber", title: "4th Chamber", artist: "GZA", spotifyUri: PLACEHOLDER_URI, startSec: 0, endSec: 30 },
   { id: "nas-nas-is-like", title: "Nas Is Like", artist: "Nas", spotifyUri: PLACEHOLDER_URI, startSec: 0, endSec: 30 },
   { id: "ghostface-apollo-kids", title: "Apollo Kids", artist: "Ghostface Killah feat. Raekwon", spotifyUri: PLACEHOLDER_URI, startSec: 0, endSec: 30 },

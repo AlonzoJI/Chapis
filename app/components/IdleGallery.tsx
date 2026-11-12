@@ -3,40 +3,36 @@
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { PAINTINGS, type Painting } from '@/data/collection';
+import {
+  ensureRotationClip,
+  getMusicState,
+  getServerMusicState,
+  onClipEnd,
+  setMuted,
+  subscribeMusic,
+} from '@/app/lib/music';
+import { ShuffleBag } from '@/app/lib/shuffleBag';
 import styles from './IdleGallery.module.css';
 
 /** Open the gallery automatically after a stretch with no input. */
 export const IDLE_ON_INACTIVITY = true;
 export const INACTIVITY_MS = 60_000;
-/** Flip to true to shuffle the rotation order. */
-const SHUFFLE = false;
-/** Time per painting. The music step will replace this timer. */
-const ADVANCE_MS = 30_000;
-const FADE_MS = 1200;
+/** Time per painting when muted or when Spotify is unavailable. */
+const FALLBACK_MS = 30_000;
+/** No painting leaves sooner than this, even if its clip ends early. */
+const MIN_DWELL_MS = 8000;
+/** Ken Burns travel time. Longer than most clips so motion never stops early. */
+const KEN_BURNS_MS = 45_000;
 /** Paintings at least this wide (width / height) pan across instead of only zooming. */
 const PAN_ASPECT = 1.45;
 /** Ignore pointer noise right after opening or toggling fullscreen. */
 const GRACE_MS = 800;
 const IMAGE_QUALITY = 85;
 
-function shuffled<T>(items: T[]): T[] {
-  const copy = [...items];
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy;
-}
-
-let clientRotation: Painting[] | null = null;
-const getClientRotation = () => (clientRotation ??= SHUFFLE ? shuffled(PAINTINGS) : PAINTINGS);
-const getServerRotation = () => PAINTINGS;
-const subscribeNever = () => () => {};
-
-// Where the gallery picks up the next time it opens.
-let resumeAt = 0;
-
-const wrap = (i: number, n: number) => ((i % n) + n) % n;
+// One bag for the whole page load, so reopening the gallery keeps going
+// through paintings that have not been shown yet.
+let paintingBag: ShuffleBag<Painting> | null = null;
+const nextPainting = () => (paintingBag ??= new ShuffleBag(PAINTINGS)).next();
 
 function imageStyle(p: Painting): React.CSSProperties {
   const origin = `${p.focalX * 100}% ${p.focalY * 100}%`;
@@ -53,18 +49,17 @@ function imageStyle(p: Painting): React.CSSProperties {
 // Pan: scale up enough to overflow, then travel horizontally and finish over
 // the focal point. 10% is the most a 1.25 scale can shift with no gap.
 function motionStyle(p: Painting): React.CSSProperties {
-  const durationMs = ADVANCE_MS + FADE_MS * 2;
   if (p.width / p.height >= PAN_ASPECT) {
     const end = (0.5 - p.focalX) * 20;
     const start = p.focalX >= 0.5 ? 10 : -10;
     return {
-      '--kb-ms': `${durationMs}ms`,
+      '--kb-ms': `${KEN_BURNS_MS}ms`,
       '--kb-pan-from': `${start}%`,
       '--kb-pan-to': `${end}%`,
     } as React.CSSProperties;
   }
   return {
-    '--kb-ms': `${durationMs}ms`,
+    '--kb-ms': `${KEN_BURNS_MS}ms`,
     transformOrigin: `${p.focalX * 100}% ${p.focalY * 100}%`,
   } as React.CSSProperties;
 }
@@ -74,7 +69,9 @@ function toggleFullscreen(el: HTMLElement | null) {
   else void el?.requestFullscreen?.().catch(() => {});
 }
 
-type View = { pos: number; leaving: number | null; pending: number | null };
+/** Pointer and touch input on the music card or controls never exits idle. */
+const isOnControls = (target: EventTarget | null) =>
+  target instanceof Element && target.closest('[data-music-card], [data-idle-control]') !== null;
 
 /** Calls onIdle after `ms` with no pointer, key, touch, wheel or scroll input. */
 export function useInactivity(ms: number, onIdle: () => void, enabled: boolean) {
@@ -94,81 +91,130 @@ export function useInactivity(ms: number, onIdle: () => void, enabled: boolean) 
   }, [ms, onIdle, enabled]);
 }
 
-export default function IdleGallery({ onExit }: { onExit: () => void }) {
-  const rotation = useSyncExternalStore(subscribeNever, getClientRotation, getServerRotation);
-  const n = rotation.length;
+type View = { pos: number; leaving: number | null; pending: number | null };
 
-  const [view, setView] = useState<View>(() => ({ pos: wrap(resumeAt, n), leaving: null, pending: null }));
-  const { pos, leaving, pending } = view;
+type Props = {
+  onExit: () => void;
+  /** Test helper: show only this painting, with no auto-advance or music. */
+  pinnedId?: string | null;
+};
+
+export default function IdleGallery({ onExit, pinnedId = null }: Props) {
+  const pinned = pinnedId ? PAINTINGS.find(p => p.id === pinnedId) ?? null : null;
+
+  // history[pos] is on screen; one painting past it is always kept ready so
+  // it can preload before the transition.
+  const [history, setHistory] = useState<Painting[]>(() =>
+    pinned ? [pinned] : [nextPainting(), nextPainting()],
+  );
+  const [view, setView] = useState<View>({ pos: 0, leaving: null, pending: null });
+  const historyRef = useRef(history);
+  const viewRef = useRef(view);
   const loadedIds = useRef(new Set<string>());
   const rootRef = useRef<HTMLDivElement>(null);
   const graceUntil = useRef(0);
 
-  const goTo = useCallback(
-    (step: number) =>
-      setView(v => {
-        const target = wrap((v.pending ?? v.pos) + step, n);
-        if (target === v.pos) return { ...v, pending: null };
-        if (loadedIds.current.has(rotation[target].id)) {
-          return { pos: target, leaving: v.pos, pending: null };
-        }
-        return { ...v, pending: target };
-      }),
-    [n, rotation],
+  const music = useSyncExternalStore(subscribeMusic, getMusicState, getServerMusicState);
+  const { pos, leaving, pending } = view;
+
+  const commitView = useCallback((next: View) => {
+    viewRef.current = next;
+    setView(next);
+  }, []);
+
+  // Swap only once the target image has loaded; otherwise park it as pending
+  // and keep the current painting up until its onLoad fires.
+  const step = useCallback(
+    (delta: number) => {
+      if (pinned) return;
+      const v = viewRef.current;
+      const target = (v.pending ?? v.pos) + delta;
+      if (target < 0 || target === v.pos) return;
+      let hist = historyRef.current;
+      while (hist.length <= target + 1) hist = [...hist, nextPainting()];
+      if (hist !== historyRef.current) {
+        historyRef.current = hist;
+        setHistory(hist);
+      }
+      commitView(
+        loadedIds.current.has(hist[target].id)
+          ? { pos: target, leaving: v.pos, pending: null }
+          : { ...v, pending: target },
+      );
+    },
+    [pinned, commitView],
   );
 
   const markLoaded = useCallback(
     (id: string) => {
       loadedIds.current.add(id);
-      setView(v =>
-        v.pending !== null && rotation[v.pending].id === id
-          ? { pos: v.pending, leaving: v.pos, pending: null }
-          : v,
-      );
+      const v = viewRef.current;
+      if (v.pending !== null && historyRef.current[v.pending].id === id) {
+        commitView({ pos: v.pending, leaving: v.pos, pending: null });
+      }
     },
-    [rotation],
+    [commitView],
   );
 
-  useEffect(() => {
-    resumeAt = pos + 1;
-  }, [pos]);
+  const clearLeaving = useCallback(
+    (i: number) => {
+      const v = viewRef.current;
+      if (v.leaving === i) commitView({ ...v, leaving: null });
+    },
+    [commitView],
+  );
 
-  // Auto-advance. The timer restarts on every change, so arrow presses get a
-  // full interval too.
+  // Advance when the song's clip ends. When muted or when Spotify cannot
+  // play, fall back to a fixed timer.
   useEffect(() => {
-    const timer = window.setTimeout(() => goTo(1), ADVANCE_MS);
+    if (pinned) return;
+    let timer: number | undefined;
+    if (ensureRotationClip(String(pos))) {
+      const shownAt = performance.now();
+      const unsubscribe = onClipEnd(() => {
+        const wait = Math.max(0, MIN_DWELL_MS - (performance.now() - shownAt));
+        timer = window.setTimeout(() => step(1), wait);
+      });
+      return () => { unsubscribe(); window.clearTimeout(timer); };
+    }
+    timer = window.setTimeout(() => step(1), FALLBACK_MS);
     return () => window.clearTimeout(timer);
-  }, [pos, goTo]);
+  }, [pos, music.muted, music.available, pinned, step]);
 
-  const exit = useCallback(() => {
-    if (document.fullscreenElement) void document.exitFullscreen();
-    onExit();
-  }, [onExit]);
-
-  // Input handling: arrows step, F toggles fullscreen, anything else exits.
+  // Input handling: arrows step, F toggles fullscreen, M toggles music,
+  // anything else exits. The music card and controls are exempt so the
+  // embed can be tapped (iPhone Safari may require it to start audio).
   useEffect(() => {
     graceUntil.current = performance.now() + GRACE_MS;
     const inGrace = () => performance.now() < graceUntil.current;
 
     const onKey = (e: KeyboardEvent) => {
       if (['Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) return;
-      if (e.key === 'ArrowRight') { e.preventDefault(); goTo(1); return; }
-      if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(-1); return; }
+      if (e.key === 'ArrowRight') { e.preventDefault(); step(1); return; }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); return; }
       if (e.key === 'f' || e.key === 'F') {
         e.preventDefault();
         graceUntil.current = performance.now() + GRACE_MS;
         toggleFullscreen(rootRef.current);
         return;
       }
+      if (e.key === 'm' || e.key === 'M') {
+        e.preventDefault();
+        setMuted(!getMusicState().muted);
+        return;
+      }
       e.preventDefault();
-      exit();
+      onExit();
     };
     const onMove = (e: MouseEvent) => {
-      if (inGrace()) return;
+      if (inGrace() || isOnControls(e.target)) return;
       if (Math.abs(e.movementX) + Math.abs(e.movementY) < 3) return;
-      exit();
+      onExit();
     };
-    const onTouch = () => { if (!inGrace()) exit(); };
+    const onTouch = (e: TouchEvent) => {
+      if (inGrace() || isOnControls(e.target)) return;
+      onExit();
+    };
     const onFullscreenChange = () => { graceUntil.current = performance.now() + GRACE_MS; };
 
     window.addEventListener('keydown', onKey);
@@ -180,8 +226,9 @@ export default function IdleGallery({ onExit }: { onExit: () => void }) {
       window.removeEventListener('mousemove', onMove);
       window.removeEventListener('touchstart', onTouch);
       document.removeEventListener('fullscreenchange', onFullscreenChange);
+      if (document.fullscreenElement) void document.exitFullscreen();
     };
-  }, [goTo, exit]);
+  }, [step, onExit]);
 
   // Lock page scroll underneath while the gallery is open.
   useEffect(() => {
@@ -192,13 +239,16 @@ export default function IdleGallery({ onExit }: { onExit: () => void }) {
   }, []);
 
   const mounted = useMemo(() => {
-    const set = new Set<number>([pos, wrap(pos + 1, n), wrap(pos - 1, n)]);
+    const set = new Set<number>([pos]);
+    if (pos + 1 < history.length) set.add(pos + 1);
+    if (pos > 0) set.add(pos - 1);
     if (leaving !== null) set.add(leaving);
     if (pending !== null) set.add(pending);
     return [...set];
-  }, [pos, leaving, pending, n]);
+  }, [pos, leaving, pending, history.length]);
 
-  const current = rotation[pos];
+  const current = history[pos];
+  const song = music.mode === 'gallery' && music.status !== 'off' ? music.song : null;
 
   return (
     <div
@@ -206,23 +256,24 @@ export default function IdleGallery({ onExit }: { onExit: () => void }) {
       className={styles.root}
       role="dialog"
       aria-modal="true"
-      aria-label="Idle gallery. Press any key to exit."
-      onDoubleClick={() => {
+      aria-label="Idle gallery. Press any key to exit, M to toggle music, F for fullscreen."
+      onDoubleClick={e => {
+        if (isOnControls(e.target)) return;
         graceUntil.current = performance.now() + GRACE_MS;
         toggleFullscreen(rootRef.current);
       }}
     >
       {mounted.map(i => {
-        const p = rotation[i];
+        const p = history[i];
         const showing = i === pos;
         const animating = showing || i === leaving;
         const pans = p.width / p.height >= PAN_ASPECT;
         return (
           <div
-            key={p.id}
+            key={`${i}-${p.id}`}
             className={`${styles.layer} ${showing ? styles.isActive : ''}`}
             aria-hidden={!showing}
-            onTransitionEnd={() => setView(v => (v.leaving === i ? { ...v, leaving: null } : v))}
+            onTransitionEnd={() => clearLeaving(i)}
           >
             <div
               className={`${styles.motion} ${animating ? (pans ? styles.pan : styles.zoom) : ''}`}
@@ -243,10 +294,30 @@ export default function IdleGallery({ onExit }: { onExit: () => void }) {
         );
       })}
 
-      <div className={styles.caption} aria-live="polite">
-        <span className={styles.title}>{current.title}</span>
-        <span>{current.artist}, {current.year}</span>
-        {current.credit && <span className={styles.credit}>{current.credit}</span>}
+      <div className={styles.bottomBar}>
+        <div className={styles.caption} aria-live="polite">
+          <span>
+            <span className={styles.title}>{current.title}</span>
+            {' '}{current.artist}, {current.year}
+          </span>
+          {song && (
+            <span className={styles.song}>
+              <span aria-hidden>♪</span> {song.title} · {song.artist}
+            </span>
+          )}
+          {current.credit && <span className={styles.credit}>{current.credit}</span>}
+        </div>
+        {!pinned && music.available && (
+          <button
+            type="button"
+            className={styles.mute}
+            data-idle-control
+            aria-pressed={music.muted}
+            onClick={() => setMuted(!music.muted)}
+          >
+            {music.muted ? 'sound off' : 'sound on'} <span className={styles.key}>M</span>
+          </button>
+        )}
       </div>
     </div>
   );

@@ -48,21 +48,29 @@
   to { transform: scale(1.25) translateX(var(--kb-pan-to)); }
 }
 
-/* The only UI left in idle mode. */
-.caption {
+/* The only UI left in idle mode: a tiny caption and the mute toggle. The
+   Spotify card (MusicPlayer) sits at the bottom right of the same row. */
+.bottomBar {
   position: absolute;
   z-index: 3;
   left: 20px;
   bottom: 16px;
-  max-width: min(480px, calc(100vw - 40px));
+  right: 340px;
   display: flex;
-  flex-wrap: wrap;
-  gap: 2px 8px;
+  align-items: flex-end;
+  gap: 14px;
+}
+.caption {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 480px;
+  min-width: 0;
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.03em;
   line-height: 1.4;
-  opacity: 0.7;
+  opacity: 0.75;
   text-shadow: 0 1px 6px rgb(0 0 0 / 0.6);
   pointer-events: none;
 }
@@ -71,9 +79,41 @@
   font-style: italic;
   font-size: 12px;
 }
+.song {
+  opacity: 0.9;
+}
 .credit {
-  flex-basis: 100%;
-  opacity: 0.8;
+  opacity: 0.75;
+}
+.mute {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: inherit;
+  background: rgb(0 0 0 / 0.3);
+  border: 1px solid rgb(255 255 255 / 0.25);
+  border-radius: 999px;
+  padding: 4px 10px;
+  opacity: 0.7;
+  cursor: pointer;
+}
+.mute:hover,
+.mute:focus-visible {
+  opacity: 1;
+}
+.key {
+  margin-left: 4px;
+  opacity: 0.6;
+}
+
+@media (max-width: 560px) {
+  .bottomBar {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    justify-content: space-between;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

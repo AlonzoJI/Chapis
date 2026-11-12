@@ -80,3 +80,13 @@ Every song in `data/songs.ts` has the placeholder `spotify:track:TODO`. To get t
 2. Without the desktop app, use **Share > Copy Song Link** instead. That gives `https://open.spotify.com/track/<id>?si=...`. Take the `<id>` and write it as `spotify:track:<id>`.
 
 Also set `startSec` and `endSec` for each clip. They default to `0` and `30`.
+
+Songs with a placeholder URI are skipped. If none are playable (or Spotify fails to load), the gallery advances every 30 seconds instead.
+
+Visitors who are not signed in to Spotify only get a 30 second preview. If `startSec` is past the end of that preview, the clip plays from the start of the preview for the same length.
+
+### Testing music and paintings
+
+- `/?song=<id>` shows a small "test clip" button that plays that one clip in the docked player, and logs playback events to the console as `[music]`.
+- `/?painting=<id>` opens the idle gallery on that painting and holds it there (no music, no auto-advance), which is handy for tuning `focalX`, `focalY` and `zoom`.
+- In the gallery: arrow keys step, `M` toggles music, `F` toggles fullscreen.
