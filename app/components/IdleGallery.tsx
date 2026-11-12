@@ -39,36 +39,52 @@ const nextPainting = () => (paintingBag ??= new ShuffleBag(PAINTINGS)).next();
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
-function imageStyle(p: Painting): React.CSSProperties {
-  const origin = `${p.focalX * 100}% ${p.focalY * 100}%`;
-  const base: React.CSSProperties = { objectFit: 'cover', objectPosition: origin, transformOrigin: origin };
-  if (p.zoom === 1) return base;
-  if (p.zoom < 1) return { ...base, transform: `scale(${p.zoom})` };
+/**
+ * object-position that puts the focal point at the center of the screen, as
+ * far as the cover crop allows. cqw/cqh are the layer's size (it is a size
+ * container); W and H are the painting's rendered size under object-fit: cover.
+ */
+function centeredPosition(p: Painting) {
+  const aspect = p.width / p.height;
+  const w = `max(100cqw, 100cqh * ${aspect})`;
+  const h = `max(100cqh, 100cqw / ${aspect})`;
+  const x = `clamp(100cqw - ${w}, 50cqw - ${w} * ${p.focalX}, 0px)`;
+  const y = `clamp(100cqh - ${h}, 50cqh - ${h} * ${p.focalY}, 0px)`;
+  return `${x} ${y}`;
+}
 
-  // Zoomed in: also pull the focal point toward the center of the screen, but
-  // only as far as the extra size allows, so no edge of the painting shows.
+function imageStyle(p: Painting): React.CSSProperties {
+  if (p.zoom === 1) return { objectFit: 'cover', objectPosition: centeredPosition(p) };
+
+  // Zoomed in: scale around the focal point and pull it toward the center,
+  // but only as far as the extra size allows, so no edge of the painting shows.
+  const origin = `${p.focalX * 100}% ${p.focalY * 100}%`;
   const shift = (focal: number) =>
     clamp((0.5 - focal) * 100, -(1 - focal) * (p.zoom - 1) * 100, focal * (p.zoom - 1) * 100);
-  return { ...base, transform: `translate(${shift(p.focalX)}%, ${shift(p.focalY)}%) scale(${p.zoom})` };
+  return {
+    objectFit: 'cover',
+    objectPosition: origin,
+    transformOrigin: origin,
+    transform: `translate(${shift(p.focalX)}%, ${shift(p.focalY)}%) scale(${p.zoom})`,
+  };
 }
 
 // Ken Burns parameters for one painting, passed to CSS as custom properties.
-// Zoom: scale up slowly around the focal point.
-// Pan: scale up enough to overflow, then travel horizontally and finish over
-// the focal point. 10% is the most a 1.25 scale can shift with no gap.
+// The focal point already sits at (or near) the center of the screen, so:
+// Zoom: scale up slowly around the center.
+// Pan: scale up enough to overflow, then travel horizontally and finish with
+// the focal point centered. 10% is the most a 1.25 scale can shift with no gap.
 function motionStyle(p: Painting): React.CSSProperties {
   if (p.width / p.height >= PAN_ASPECT) {
-    const end = (0.5 - p.focalX) * 20;
-    const start = p.focalX >= 0.5 ? 10 : -10;
     return {
       '--kb-ms': `${KEN_BURNS_MS}ms`,
-      '--kb-pan-from': `${start}%`,
-      '--kb-pan-to': `${end}%`,
+      '--kb-pan-from': `${p.focalX >= 0.5 ? 10 : -10}%`,
+      '--kb-pan-to': '0%',
     } as React.CSSProperties;
   }
   return {
     '--kb-ms': `${KEN_BURNS_MS}ms`,
-    transformOrigin: `${p.focalX * 100}% ${p.focalY * 100}%`,
+    transformOrigin: p.zoom === 1 ? '50% 50%' : `${p.focalX * 100}% ${p.focalY * 100}%`,
   } as React.CSSProperties;
 }
 
@@ -301,10 +317,6 @@ export default function IdleGallery({ onExit, pinnedId = null }: Props) {
               className={`${styles.motion} ${animating ? (pans ? styles.pan : styles.zoom) : ''}`}
               style={motionStyle(p)}
             >
-              {p.zoom < 1 && (
-                // Zoomed out: a blurred copy of the painting fills the edges.
-                <Image className={styles.backdrop} src={p.image} alt="" fill sizes="50vw" quality={75} loading="eager" />
-              )}
               <Image
                 src={p.image}
                 alt={showing ? `${p.title} by ${p.artist}` : ''}

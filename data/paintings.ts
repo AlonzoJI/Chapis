@@ -1,9 +1,9 @@
 // Paintings for the hero backdrop. Images live under /public/art and are not
 // downloaded yet; see README "Art and music assets" for sources.
 //
-// focalX / focalY are 0..1 fractions of the image width / height. They feed
-// CSS object-position (and transform-origin when zoom > 1), so a crop keeps the
-// subject in frame on both wide and portrait screens.
+// focalX / focalY are 0..1 fractions of the image width / height. The idle
+// gallery moves that point to the center of the screen, as far as the crop
+// allows, on both wide and portrait screens.
 //
 // Focal points and zoom values below are starting estimates. Tune them once the
 // real files are in /public/art.
@@ -20,11 +20,7 @@ export type Painting = {
   height: number;
   focalX: number;
   focalY: number;
-  /**
-   * 1 fills the screen. Above 1 zooms in and pulls the focal point toward the
-   * center. Below 1 zooms out to show more of the painting, with a blurred
-   * copy of it filling the edges.
-   */
+  /** 1 fills the screen; higher values zoom in around the focal point. */
   zoom: number;
   credit?: string;
 };
@@ -101,6 +97,7 @@ export const PAINTINGS: Painting[] = [
     zoom: 1,
   },
   {
+    // Focal point on Jesus, seated at the center of the table.
     id: "veronese-wedding-at-cana",
     title: "The Wedding at Cana",
     artist: "Paolo Veronese",
@@ -110,7 +107,7 @@ export const PAINTINGS: Painting[] = [
     width: 3200,
     height: 2143,
     focalX: 0.5,
-    focalY: 0.5,
+    focalY: 0.65,
     zoom: 1,
   },
   {
@@ -140,6 +137,7 @@ export const PAINTINGS: Painting[] = [
     zoom: 1,
   },
   {
+    // Focal point on the man at the controls.
     id: "rivera-man-controller-of-the-universe",
     title: "Man, Controller of the Universe",
     artist: "Diego Rivera",
@@ -150,7 +148,7 @@ export const PAINTINGS: Painting[] = [
     height: 1920,
     focalX: 0.52,
     focalY: 0.3,
-    zoom: 0.85,
+    zoom: 1,
     credit: RIVERA_CREDIT,
   },
   {
