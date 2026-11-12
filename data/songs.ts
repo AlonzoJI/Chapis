@@ -20,9 +20,8 @@ export const OPENER_SONG: Song = {
   id: "earl-alchemist-sentry",
   title: "Sentry",
   artist: "Earl Sweatshirt & The Alchemist feat. MIKE",
-  // Found by search; the embed shows "Hip-Hop Big Ones" art, so this may be a
-  // compilation copy. Swap in the VOIR DIRE album URI if you prefer that one.
-  spotifyUri: "spotify:track:2BToiLz6TkBEfxaQoNLx1o",
+  // VOIR DIRE (2023) album version.
+  spotifyUri: "spotify:track:48gtujiZ77wSZ29aWZe84V",
   startSec: 0,
   endSec: 30,
 };

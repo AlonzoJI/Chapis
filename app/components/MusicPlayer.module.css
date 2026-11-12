@@ -20,6 +20,13 @@
   z-index: 1400;
 }
 
+/* Opening screen: bottom left, across from the enter and idle buttons. */
+.opening {
+  left: 24px;
+  bottom: 24px;
+  z-index: 1550;
+}
+
 /* Idle gallery: bottom right, beside the caption, above the overlay. */
 .gallery {
   right: 20px;
@@ -89,6 +96,10 @@
     left: 16px;
     right: 16px;
     width: auto;
+  }
+  /* Above the full-width enter and idle buttons. */
+  .opening {
+    bottom: 68px;
   }
   /* Top of the screen in the gallery so the caption stays readable. */
   .gallery {

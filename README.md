@@ -89,4 +89,5 @@ Visitors who are not signed in to Spotify only get a 30 second preview. If `star
 
 - `/?song=<id>` shows a small "test clip" button that plays that one clip in the docked player, and logs playback events to the console as `[music]`.
 - `/?painting=<id>` opens the idle gallery on that painting and holds it there (no music, no auto-advance), which is handy for tuning `focalX`, `focalY` and `zoom`.
-- In the gallery: arrow keys step, `M` toggles music, `F` toggles fullscreen.
+- In the gallery: arrow keys step, `M` toggles music, `F` toggles fullscreen. Moving the mouse, tapping or pressing another key shows a "leave gallery" button; that button or `Esc` exits.
+- Sentry only plays on the opening screen, from the player's own play button. "enter" stops it.

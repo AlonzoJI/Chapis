@@ -11,9 +11,13 @@ import { OPENER, SONGS, type Song } from '@/data/collection';
 import { ShuffleBag } from './shuffleBag';
 import { loadSpotifyIframeApi, type EmbedController, type PlaybackUpdate } from './spotify';
 
-export type MusicMode = 'hidden' | 'docked' | 'gallery';
-/** blocked: the browser refused to start audio; the visitor must tap play in the embed. */
-export type MusicStatus = 'off' | 'loading' | 'playing' | 'blocked';
+/** opening: on the opening screen, where the visitor starts Sentry from the embed. */
+export type MusicMode = 'hidden' | 'opening' | 'docked' | 'gallery';
+/**
+ * cued: loaded and waiting for the visitor to press play in the embed.
+ * blocked: the browser refused to start audio; the visitor must tap play in the embed.
+ */
+export type MusicStatus = 'off' | 'cued' | 'loading' | 'playing' | 'blocked';
 
 export type MusicState = {
   mode: MusicMode;
@@ -117,6 +121,8 @@ type Clip = {
   endAt: number;
   /** startSec was out of reach (preview), so the track was reloaded at 0. */
   previewRetry: boolean;
+  /** Loaded without play(); starts when the visitor presses play in the embed. */
+  cued: boolean;
   watchdog?: number;
   blockedTimer?: number;
 };
@@ -142,6 +148,7 @@ function sendToPlayer(c: Clip) {
   c.sentToPlayer = true;
   // loadUri, then play, then (once audio is actually running) seek to startSec.
   controller.loadUri(c.song.spotifyUri, false, c.song.startSec);
+  if (c.cued) return;
   controller.play();
   c.blockedTimer = window.setTimeout(() => {
     if (clip === c && !c.started) {
@@ -203,6 +210,10 @@ function endClip(reason: string) {
   if (state.mode === 'docked') {
     controller?.pause();
     setState({ mode: 'hidden', status: 'off', song: null });
+  } else if (state.mode === 'opening') {
+    // Stop at endSec and cue the clip again so it can be replayed.
+    controller?.pause();
+    cueClip(ended.song, 'opening');
   }
   clipEndListeners.forEach(listener => listener());
 }
@@ -221,12 +232,28 @@ function abandonClip() {
 export function playClip(song: Song, mode: MusicMode): boolean {
   if (!state.available || !isPlayableUri(song.spotifyUri)) return false;
   abandonClip();
-  const c: Clip = { song, sentToPlayer: false, started: false, startedAt: 0, endAt: song.endSec, previewRetry: false };
+  const c: Clip = { song, sentToPlayer: false, started: false, startedAt: 0, endAt: song.endSec, previewRetry: false, cued: false };
   clip = c;
   armWatchdog(c, clipMs(song) + BLOCKED_AFTER_MS + WATCHDOG_SLACK_MS);
   setState({ mode, song, status: 'loading' });
   sendToPlayer(c);
   log('play', song.id, `${song.startSec}-${song.endSec}s`, controller ? '' : '(queued until ready)');
+  return true;
+}
+
+/**
+ * Loads a clip at startSec and shows the player without starting audio. The
+ * visitor starts it with the embed's own play button; clip tracking (end at
+ * endSec, preview handling) then works as with playClip.
+ */
+export function cueClip(song: Song, mode: MusicMode): boolean {
+  if (!state.available || !isPlayableUri(song.spotifyUri)) return false;
+  abandonClip();
+  const c: Clip = { song, sentToPlayer: false, started: false, startedAt: 0, endAt: song.endSec, previewRetry: false, cued: true };
+  clip = c;
+  setState({ mode, song, status: 'cued' });
+  sendToPlayer(c);
+  log('cue', song.id, `${song.startSec}-${song.endSec}s`, controller ? '' : '(queued until ready)');
   return true;
 }
 

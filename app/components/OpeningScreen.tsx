@@ -9,7 +9,7 @@ import {
   markOpeningSeen,
   subscribeOpeningSeen,
 } from '@/app/lib/openingSeen';
-import { playClip } from '@/app/lib/music';
+import { cueClip, stopMusic } from '@/app/lib/music';
 import styles from './OpeningScreen.module.css';
 
 const FADE_MS = 1200;
@@ -17,6 +17,12 @@ const FADE_MS = 1200;
 export default function OpeningScreen({ onIdle }: { onIdle: () => void }) {
   const seen = useSyncExternalStore(subscribeOpeningSeen, getOpeningSeen, getOpeningSeenOnServer);
   const [leaving, setLeaving] = useState(false);
+
+  // Sentry lives only on the opening screen: cue it in the player so the
+  // visitor can press play there. Entering the site stops it.
+  useEffect(() => {
+    if (!seen) cueClip(OPENER.song, 'opening');
+  }, [seen]);
 
   // Keep the page underneath from scrolling while the opening screen is up.
   useEffect(() => {
@@ -31,9 +37,7 @@ export default function OpeningScreen({ onIdle }: { onIdle: () => void }) {
 
   const enter = () => {
     if (leaving) return;
-    // Must run inside the click handler: browsers only allow audio to start
-    // from a user gesture. The player docks bottom right once the fade ends.
-    playClip(OPENER.song, 'docked');
+    stopMusic();
     setLeaving(true);
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     window.setTimeout(markOpeningSeen, reduced ? 0 : FADE_MS);
@@ -62,7 +66,7 @@ export default function OpeningScreen({ onIdle }: { onIdle: () => void }) {
       <p className={styles.name}>jared alonzo</p>
       <div className={styles.controls}>
         <button type="button" className={styles.button} onClick={enter}>
-          enter ♪
+          enter
         </button>
         <button type="button" className={styles.button} onClick={onIdle}>
           idle

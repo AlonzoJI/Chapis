@@ -27,6 +27,8 @@ const KEN_BURNS_MS = 45_000;
 const PAN_ASPECT = 1.45;
 /** Ignore pointer noise right after opening or toggling fullscreen. */
 const GRACE_MS = 800;
+/** How long the leave button and cursor stay visible after the last input. */
+const CONTROLS_VISIBLE_MS = 3000;
 const IMAGE_QUALITY = 85;
 
 // One bag for the whole page load, so reopening the gallery keeps going
@@ -113,6 +115,8 @@ export default function IdleGallery({ onExit, pinnedId = null }: Props) {
   const loadedIds = useRef(new Set<string>());
   const rootRef = useRef<HTMLDivElement>(null);
   const graceUntil = useRef(0);
+  const [controlsVisible, setControlsVisible] = useState(false);
+  const hideControlsTimer = useRef<number | undefined>(undefined);
 
   const music = useSyncExternalStore(subscribeMusic, getMusicState, getServerMusicState);
   const { pos, leaving, pending } = view;
@@ -181,9 +185,19 @@ export default function IdleGallery({ onExit, pinnedId = null }: Props) {
     return () => window.clearTimeout(timer);
   }, [pos, music.muted, music.available, pinned, step]);
 
+  // Leaving takes a deliberate action: input only reveals the "leave gallery"
+  // button (and cursor) for a few seconds. The button or Esc exits.
+  const revealControls = useCallback(() => {
+    setControlsVisible(true);
+    window.clearTimeout(hideControlsTimer.current);
+    hideControlsTimer.current = window.setTimeout(() => setControlsVisible(false), CONTROLS_VISIBLE_MS);
+  }, []);
+  useEffect(() => () => window.clearTimeout(hideControlsTimer.current), []);
+
   // Input handling: arrows step, F toggles fullscreen, M toggles music,
-  // anything else exits. The music card and controls are exempt so the
-  // embed can be tapped (iPhone Safari may require it to start audio).
+  // Esc exits, and any other input reveals the leave button. The music card
+  // and controls are exempt so the embed can be tapped (iPhone Safari may
+  // require it to start audio).
   useEffect(() => {
     graceUntil.current = performance.now() + GRACE_MS;
     const inGrace = () => performance.now() < graceUntil.current;
@@ -203,17 +217,17 @@ export default function IdleGallery({ onExit, pinnedId = null }: Props) {
         setMuted(!getMusicState().muted);
         return;
       }
-      e.preventDefault();
-      onExit();
+      if (e.key === 'Escape') { e.preventDefault(); onExit(); return; }
+      revealControls();
     };
     const onMove = (e: MouseEvent) => {
-      if (inGrace() || isOnControls(e.target)) return;
+      if (inGrace()) return;
       if (Math.abs(e.movementX) + Math.abs(e.movementY) < 3) return;
-      onExit();
+      revealControls();
     };
     const onTouch = (e: TouchEvent) => {
       if (inGrace() || isOnControls(e.target)) return;
-      onExit();
+      revealControls();
     };
     const onFullscreenChange = () => { graceUntil.current = performance.now() + GRACE_MS; };
 
@@ -228,7 +242,7 @@ export default function IdleGallery({ onExit, pinnedId = null }: Props) {
       document.removeEventListener('fullscreenchange', onFullscreenChange);
       if (document.fullscreenElement) void document.exitFullscreen();
     };
-  }, [step, onExit]);
+  }, [step, onExit, revealControls]);
 
   // Lock page scroll underneath while the gallery is open.
   useEffect(() => {
@@ -253,10 +267,10 @@ export default function IdleGallery({ onExit, pinnedId = null }: Props) {
   return (
     <div
       ref={rootRef}
-      className={styles.root}
+      className={`${styles.root} ${controlsVisible ? styles.showControls : ''}`}
       role="dialog"
       aria-modal="true"
-      aria-label="Idle gallery. Press any key to exit, M to toggle music, F for fullscreen."
+      aria-label="Idle gallery. Press Escape or use the leave gallery button to exit. Arrow keys change paintings, M toggles music, F toggles fullscreen."
       onDoubleClick={e => {
         if (isOnControls(e.target)) return;
         graceUntil.current = performance.now() + GRACE_MS;
@@ -293,6 +307,16 @@ export default function IdleGallery({ onExit, pinnedId = null }: Props) {
           </div>
         );
       })}
+
+      <button
+        type="button"
+        className={styles.leave}
+        data-idle-control
+        onClick={onExit}
+        tabIndex={controlsVisible ? 0 : -1}
+      >
+        leave gallery <span className={styles.key}>esc</span>
+      </button>
 
       <div className={styles.bottomBar}>
         <div className={styles.caption} aria-live="polite">

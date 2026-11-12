@@ -27,7 +27,7 @@ export default function MusicPlayer() {
 
   return (
     <div
-      className={`${styles.card} ${music.mode === 'gallery' ? styles.gallery : styles.docked} ${visible ? styles.visible : ''}`}
+      className={`${styles.card} ${styles[music.mode === 'hidden' ? 'docked' : music.mode]} ${visible ? styles.visible : ''}`}
       data-music-card
       aria-hidden={!visible}
       inert={!visible}

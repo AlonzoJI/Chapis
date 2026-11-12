@@ -1,9 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
-import { PAINTINGS, SONGS } from '@/data/collection';
+import { OPENER, PAINTINGS, SONGS } from '@/data/collection';
 import { OPEN_IDLE_EVENT } from '@/app/lib/idleEvents';
-import { playClip, primeRotation, setMusicDebug, stopMusic } from '@/app/lib/music';
+import { cueClip, playClip, primeRotation, setMusicDebug, stopMusic } from '@/app/lib/music';
+import { getOpeningSeen } from '@/app/lib/openingSeen';
 import IdleGallery, { IDLE_ON_INACTIVITY, INACTIVITY_MS, useInactivity } from './IdleGallery';
 import IdleLink from './IdleLink';
 import MusicPlayer from './MusicPlayer';
@@ -38,6 +39,8 @@ export default function IdleController() {
   }, []);
   const closeIdle = useCallback(() => {
     stopMusic();
+    // Back on the opening screen: put Sentry back in the player.
+    if (!getOpeningSeen()) cueClip(OPENER.song, 'opening');
     setUserOpened(false);
     setTestPaintingClosed(true);
   }, []);
