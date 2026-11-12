@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import OpeningScreen from './components/OpeningScreen';
+import IdleGallery, { IDLE_ON_INACTIVITY, INACTIVITY_MS, useInactivity } from './components/IdleGallery';
 
 // ─── Data ─────────────────────────────────────────────────────────────
 
@@ -476,6 +478,10 @@ export default function Home() {
   const [showOverlay, setShowOverlay] = useState(true);
   const [activeSection, setActiveSection] = useState<string>('intro');
   const [expTab, setExpTab] = useState<ExpTab>('work');
+  const [idleOpen, setIdleOpen] = useState(false);
+  const openIdle = useCallback(() => setIdleOpen(true), []);
+  const closeIdle = useCallback(() => setIdleOpen(false), []);
+  useInactivity(INACTIVITY_MS, openIdle, IDLE_ON_INACTIVITY && !idleOpen);
 
   const activePyramidVertex = activeSection;
 
@@ -695,6 +701,10 @@ export default function Home() {
         .nav-brand { display: flex; align-items: baseline; gap: 10px; color: var(--text); text-decoration: none; }
         .nav-brand .nav-name { font-size: 14px; font-weight: 500; font-family: var(--serif); }
         .nav-brand .nav-handle { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+        .nav-right { display: flex; align-items: center; gap: 16px; }
+        .idle-link { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; color: var(--muted); background: none; border: 0; padding: 0; cursor: pointer; transition: color 0.15s; }
+        .idle-link:hover, .idle-link:focus-visible { color: var(--text); }
+        footer .idle-link { font-size: 13px; letter-spacing: 0; font-family: inherit; }
         .nav-current { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: 0.08em; text-align: right; }
 
         main { max-width: var(--max); margin: 0 auto; padding: 0 24px 120px; }
@@ -811,6 +821,9 @@ export default function Home() {
 
       {showOverlay && <LoadingOverlay fading={overlayFading} />}
 
+      <OpeningScreen onIdle={openIdle} />
+      {idleOpen && <IdleGallery onExit={closeIdle} />}
+
       <PyramidNav
         mode={pyramidMode}
         active={activePyramidVertex}
@@ -825,8 +838,11 @@ export default function Home() {
             <span className="nav-name">Jared Alonzo</span>
             <span className="nav-handle">@chapis</span>
           </a>
-          <span className="nav-current">
-            {(NODES.find(n => n.id === activePyramidVertex)?.full ?? '').toLowerCase()}
+          <span className="nav-right">
+            <span className="nav-current">
+              {(NODES.find(n => n.id === activePyramidVertex)?.full ?? '').toLowerCase()}
+            </span>
+            <button type="button" className="idle-link" onClick={openIdle}>idle</button>
           </span>
         </div>
       </nav>
@@ -1009,6 +1025,7 @@ export default function Home() {
           <a href="https://github.com/AlonzoJI" target="_blank" rel="noopener">GitHub</a>
           <a href="https://x.com/chapisalonzo" target="_blank" rel="noopener">X</a>
           <a href="https://www.linkedin.com/in/jared-alonzo/" target="_blank" rel="noopener">LinkedIn</a>
+          <button type="button" className="idle-link" onClick={openIdle}>idle</button>
         </div>
         <span className="copy">2026 Jared Alonzo  ·  <em>still adding edges</em></span>
       </footer>

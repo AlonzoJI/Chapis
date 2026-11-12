@@ -1,0 +1,80 @@
+.screen {
+  position: fixed;
+  inset: 0;
+  z-index: 1500;
+  overflow: hidden;
+  background: #0b0b0c;
+  color: #f4f1ea;
+  opacity: 1;
+  transition: opacity 1.2s ease-in-out;
+}
+
+/* Set before first paint by app/layout.tsx when this session already entered. */
+:global(html.opening-seen) .screen {
+  display: none;
+}
+
+.isLeaving {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, rgb(0 0 0 / 0.35), transparent 120px),
+    linear-gradient(to top, rgb(0 0 0 / 0.45), transparent 160px);
+}
+
+.name {
+  position: absolute;
+  top: 20px;
+  left: 24px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-shadow: 0 1px 8px rgb(0 0 0 / 0.45);
+}
+
+.controls {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  display: flex;
+  gap: 8px;
+}
+
+.button {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: inherit;
+  background: rgb(0 0 0 / 0.25);
+  border: 1px solid rgb(255 255 255 / 0.35);
+  border-radius: 999px;
+  padding: 7px 14px;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: background 0.2s, border-color 0.2s;
+}
+.button:hover {
+  background: rgb(0 0 0 / 0.45);
+  border-color: rgb(255 255 255 / 0.7);
+}
+.button:focus-visible {
+  outline: 1px solid #f4f1ea;
+  outline-offset: 2px;
+}
+
+@media (max-width: 560px) {
+  .name { left: 16px; top: 16px; }
+  .controls { left: 16px; right: 16px; bottom: 16px; }
+  .button { flex: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screen,
+  .button { transition: none; }
+}

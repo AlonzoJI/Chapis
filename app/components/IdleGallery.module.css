@@ -1,0 +1,84 @@
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  overflow: hidden;
+  background: #000;
+  color: #f4f1ea;
+  cursor: none;
+  animation: galleryIn 1.2s ease-in-out both;
+}
+
+@keyframes galleryIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 1.2s ease-in-out;
+}
+.isActive {
+  opacity: 1;
+  z-index: 1;
+}
+
+.motion {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+.zoom {
+  animation: kbZoom var(--kb-ms) linear both;
+}
+@keyframes kbZoom {
+  from { transform: scale(1); }
+  to { transform: scale(1.12); }
+}
+
+.pan {
+  animation: kbPan var(--kb-ms) ease-in-out both;
+}
+@keyframes kbPan {
+  from { transform: scale(1.25) translateX(var(--kb-pan-from)); }
+  to { transform: scale(1.25) translateX(var(--kb-pan-to)); }
+}
+
+/* The only UI left in idle mode. */
+.caption {
+  position: absolute;
+  z-index: 3;
+  left: 20px;
+  bottom: 16px;
+  max-width: min(480px, calc(100vw - 40px));
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.03em;
+  line-height: 1.4;
+  opacity: 0.7;
+  text-shadow: 0 1px 6px rgb(0 0 0 / 0.6);
+  pointer-events: none;
+}
+.title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 12px;
+}
+.credit {
+  flex-basis: 100%;
+  opacity: 0.8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root { animation: none; }
+  .layer { transition: none; }
+  .zoom,
+  .pan { animation: none; }
+}
