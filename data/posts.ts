@@ -16,6 +16,7 @@ export function getPost(slug: string): Post | undefined {
 export const POSTS: Post[] = [
   {
     slug: 'miguel-angel-asturias-came-home', date: '2026', title: 'Miguel Ángel Asturias Came Home',
+    hero: '/blog/miguel-angel-asturias.jpg',
     paragraphs: [
       'I recently found myself in Guatemala for a beautiful wedding. By pure coincidence, my trip lined up with the public wake of Miguel Ángel Asturias, our first Nobel laureate.',
       'Earlier this year I stood in Père Lachaise Cemetery in Paris and left flowers for him. He is the only Central American to win the Nobel Prize in Literature, and he had rested in Paris for half a century, a long way from the country he spent his life writing about. A few months later I was walking through the Palacio Nacional and there he was again. Same man. New address. His ashes had finally come home in an urn shaped like a kernel of corn, a nod to Men of Maize and the cornfields that cover Maya country.',
