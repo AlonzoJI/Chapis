@@ -69,6 +69,10 @@
 .close:focus-visible {
   background: rgb(0 0 0 / 0.8);
 }
+.close:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
 
 /* Shown when the browser blocks audio (usually iPhone Safari): an invitation,
    not an error. */

@@ -8,6 +8,8 @@
 
 export const OPENING_SEEN_KEY = 'chapis_opening_seen_v1';
 export const OPENING_SEEN_CLASS = 'opening-seen';
+/** Set when "enter" is pressed, so the site is visible under the fading painting. */
+export const OPENING_LEAVING_CLASS = 'opening-leaving';
 
 const listeners = new Set<() => void>();
 

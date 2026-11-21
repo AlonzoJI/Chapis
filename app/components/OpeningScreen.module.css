@@ -1,6 +1,8 @@
 .screen {
   position: fixed;
   inset: 0;
+  /* The painting positions itself with cqw/cqh (see app/lib/framing.ts). */
+  container-type: size;
   z-index: 1500;
   overflow: hidden;
   background: #0b0b0c;

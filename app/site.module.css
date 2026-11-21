@@ -207,23 +207,23 @@
 }
 
 /* ── Writing ── */
+.postList {
+  list-style: none;
+}
 .post {
   border-bottom: 1px solid var(--rule);
 }
 .post:first-of-type {
   border-top: 1px solid var(--rule);
 }
-.postSummary {
+.postRow {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 16px;
   padding: 14px 0;
-  list-style: none;
-  cursor: pointer;
-}
-.postSummary::-webkit-details-marker {
-  display: none;
+  color: var(--text);
+  text-decoration: none;
 }
 .postTitle {
   display: flex;
@@ -233,12 +233,14 @@
 }
 .postMarker {
   display: inline-block;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--faint);
-  transition: transform 0.2s;
+  transition: transform 0.2s, color 0.2s;
 }
-.post[open] .postMarker {
-  transform: rotate(90deg);
+.postRow:hover .postMarker,
+.postRow:focus-visible .postMarker {
+  color: var(--text);
+  transform: translateX(3px);
 }
 .postDate {
   flex-shrink: 0;
@@ -246,13 +248,34 @@
   font-size: 12px;
   color: var(--faint);
 }
-.postContent {
-  padding: 8px 0 24px;
+
+/* ── Article page ── */
+.back {
+  display: inline-block;
+  margin-bottom: 48px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  text-decoration: none;
+}
+.back:hover,
+.back:focus-visible {
+  color: var(--text);
+}
+.articleHead {
+  margin-bottom: 32px;
+}
+.articleTitle {
+  margin-bottom: 8px;
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1.25;
 }
 .postHero {
   position: relative;
   aspect-ratio: 16 / 9;
-  margin-bottom: 22px;
+  margin-bottom: 32px;
   border-radius: 6px;
   overflow: hidden;
   background: var(--tile);
@@ -261,7 +284,7 @@
   object-fit: cover;
 }
 .postContent p {
-  margin-bottom: 16px;
+  margin-bottom: 18px;
   line-height: 1.75;
 }
 .postContent p:last-child {
@@ -270,6 +293,14 @@
 .lede {
   font-style: italic;
   color: var(--muted);
+}
+.articleFoot {
+  margin-top: 64px;
+  padding-top: 20px;
+  border-top: 1px solid var(--rule);
+}
+.articleFoot .back {
+  margin-bottom: 0;
 }
 
 /* ── Contact ── */
@@ -352,6 +383,9 @@
   }
   .contactGrid {
     grid-template-columns: 1fr;
+  }
+  .articleTitle {
+    font-size: 24px;
   }
   .footer {
     flex-direction: column;

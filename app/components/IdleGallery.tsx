@@ -12,6 +12,8 @@ import {
   setMuted,
   subscribeMusic,
 } from '@/app/lib/music';
+import { paintingAlt, paintingImageStyle } from '@/app/lib/framing';
+import { holdInert } from '@/app/lib/inertBackground';
 import { ShuffleBag } from '@/app/lib/shuffleBag';
 import styles from './IdleGallery.module.css';
 
@@ -36,38 +38,6 @@ const IMAGE_QUALITY = 85;
 // through paintings that have not been shown yet.
 let paintingBag: ShuffleBag<Painting> | null = null;
 const nextPainting = () => (paintingBag ??= new ShuffleBag(PAINTINGS)).next();
-
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
-
-/**
- * object-position that puts the focal point at the center of the screen, as
- * far as the cover crop allows. cqw/cqh are the layer's size (it is a size
- * container); W and H are the painting's rendered size under object-fit: cover.
- */
-function centeredPosition(p: Painting) {
-  const aspect = p.width / p.height;
-  const w = `max(100cqw, 100cqh * ${aspect})`;
-  const h = `max(100cqh, 100cqw / ${aspect})`;
-  const x = `clamp(100cqw - ${w}, 50cqw - ${w} * ${p.focalX}, 0px)`;
-  const y = `clamp(100cqh - ${h}, 50cqh - ${h} * ${p.focalY}, 0px)`;
-  return `${x} ${y}`;
-}
-
-function imageStyle(p: Painting): React.CSSProperties {
-  if (p.zoom === 1) return { objectFit: 'cover', objectPosition: centeredPosition(p) };
-
-  // Zoomed in: scale around the focal point and pull it toward the center,
-  // but only as far as the extra size allows, so no edge of the painting shows.
-  const origin = `${p.focalX * 100}% ${p.focalY * 100}%`;
-  const shift = (focal: number) =>
-    clamp((0.5 - focal) * 100, -(1 - focal) * (p.zoom - 1) * 100, focal * (p.zoom - 1) * 100);
-  return {
-    objectFit: 'cover',
-    objectPosition: origin,
-    transformOrigin: origin,
-    transform: `translate(${shift(p.focalX)}%, ${shift(p.focalY)}%) scale(${p.zoom})`,
-  };
-}
 
 // Ken Burns parameters for one painting, passed to CSS as custom properties.
 // The focal point already sits at (or near) the center of the screen, so:
@@ -268,6 +238,18 @@ export default function IdleGallery({ onExit, pinnedId = null }: Props) {
     };
   }, [step, onExit, revealControls]);
 
+  // Move focus into the gallery, keep the page behind out of reach, and give
+  // focus back to whatever opened the gallery when it closes.
+  useEffect(() => {
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    rootRef.current?.focus({ preventScroll: true });
+    const release = holdInert('gallery');
+    return () => {
+      release();
+      opener?.focus({ preventScroll: true });
+    };
+  }, []);
+
   // Lock page scroll underneath while the gallery is open.
   useEffect(() => {
     const html = document.documentElement;
@@ -277,9 +259,9 @@ export default function IdleGallery({ onExit, pinnedId = null }: Props) {
   }, []);
 
   const mounted = useMemo(() => {
+    // Only the next painting is preloaded; going back loads on demand.
     const set = new Set<number>([pos]);
     if (pos + 1 < history.length) set.add(pos + 1);
-    if (pos > 0) set.add(pos - 1);
     if (leaving !== null) set.add(leaving);
     if (pending !== null) set.add(pending);
     return [...set];
@@ -293,6 +275,7 @@ export default function IdleGallery({ onExit, pinnedId = null }: Props) {
       ref={rootRef}
       className={`${styles.root} ${controlsVisible ? styles.showControls : ''}`}
       role="dialog"
+      tabIndex={-1}
       aria-modal="true"
       aria-label="Idle gallery. Press Escape or use the leave gallery button to exit. Arrow keys change paintings, M toggles music, F toggles fullscreen."
       onDoubleClick={e => {
@@ -319,12 +302,12 @@ export default function IdleGallery({ onExit, pinnedId = null }: Props) {
             >
               <Image
                 src={p.image}
-                alt={showing ? `${p.title} by ${p.artist}` : ''}
+                alt={showing ? paintingAlt(p) : ''}
                 fill
                 sizes="100vw"
                 quality={IMAGE_QUALITY}
                 loading="eager"
-                style={imageStyle(p)}
+                style={paintingImageStyle(p)}
                 onLoad={() => markLoaded(p.id)}
               />
             </div>
@@ -337,9 +320,9 @@ export default function IdleGallery({ onExit, pinnedId = null }: Props) {
         className={styles.leave}
         data-idle-control
         onClick={onExit}
-        tabIndex={controlsVisible ? 0 : -1}
+        aria-keyshortcuts="Escape"
       >
-        leave gallery <span className={styles.key}>esc</span>
+        leave gallery <span className={styles.key} aria-hidden>esc</span>
       </button>
 
       <div className={styles.bottomBar}>
@@ -360,10 +343,10 @@ export default function IdleGallery({ onExit, pinnedId = null }: Props) {
             type="button"
             className={styles.mute}
             data-idle-control
-            aria-pressed={music.muted}
+            aria-keyshortcuts="M"
             onClick={() => setMuted(!music.muted)}
           >
-            {music.muted ? 'sound off' : 'sound on'} <span className={styles.key}>M</span>
+            {music.muted ? 'unmute' : 'mute'} <span className={styles.key} aria-hidden>M</span>
           </button>
         )}
       </div>

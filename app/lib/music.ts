@@ -95,21 +95,37 @@ export function initMusic(container: HTMLElement) {
   const host = document.createElement('div');
   container.appendChild(host);
 
-  const giveUp = window.setTimeout(() => markUnavailable('controller never became ready'), 15_000);
-  loadSpotifyIframeApi()
-    .then(api => {
-      api.createController(host, { uri: firstUri, width: '100%', height: 80 }, created => {
+  // Spotify's script and player are heavy. Load them only once the page has
+  // finished loading and the browser is idle, so they never compete with the
+  // painting and fonts. Play requests made before then are queued.
+  afterPageSettles(() => {
+    const giveUp = window.setTimeout(() => markUnavailable('controller never became ready'), 15_000);
+    loadSpotifyIframeApi()
+      .then(api => {
+        api.createController(host, { uri: firstUri, width: '100%', height: 80 }, created => {
+          window.clearTimeout(giveUp);
+          controller = created;
+          container.querySelector('iframe')?.setAttribute('title', 'Spotify player');
+          created.addListener('playback_update', handleUpdate);
+          log('controller ready');
+          if (clip && !clip.sentToPlayer) sendToPlayer(clip);
+        });
+      })
+      .catch((error: unknown) => {
         window.clearTimeout(giveUp);
-        controller = created;
-        created.addListener('playback_update', handleUpdate);
-        log('controller ready');
-        if (clip && !clip.sentToPlayer) sendToPlayer(clip);
+        markUnavailable(error instanceof Error ? error.message : 'load failed');
       });
-    })
-    .catch((error: unknown) => {
-      window.clearTimeout(giveUp);
-      markUnavailable(error instanceof Error ? error.message : 'load failed');
-    });
+  });
+}
+
+function afterPageSettles(run: () => void) {
+  const whenIdle = () => {
+    // Older Safari has no requestIdleCallback.
+    if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(run, { timeout: 2000 });
+    else setTimeout(run, 300);
+  };
+  if (document.readyState === 'complete') whenIdle();
+  else window.addEventListener('load', whenIdle, { once: true });
 }
 
 function markUnavailable(reason: string) {

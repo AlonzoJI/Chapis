@@ -114,9 +114,18 @@
 .showControls {
   cursor: auto;
 }
-.showControls .leave {
+.showControls .leave,
+.leave:focus-visible {
   opacity: 1;
   pointer-events: auto;
+}
+.leave:focus-visible,
+.mute:focus-visible {
+  outline: 2px solid #f4f1ea;
+  outline-offset: 2px;
+}
+.root:focus {
+  outline: none;
 }
 
 .mute {

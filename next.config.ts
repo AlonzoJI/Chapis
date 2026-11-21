@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
   images: {
     // 85 is used for the full-screen paintings (opening screen and idle gallery).
     qualities: [75, 85],
+    // AVIF where the browser supports it, WebP otherwise, at responsive widths.
+    formats: ["image/avif", "image/webp"],
     // Hero images for the Writing posts that are hosted elsewhere.
     remotePatterns: [
       new URL("https://damassets.autodesk.net/content/dam/**"),

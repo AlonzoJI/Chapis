@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import Link from 'next/link';
 import ExperienceTabs from './components/ExperienceTabs';
 import IdleController from './components/IdleController';
 import IdleLink from './components/IdleLink';
@@ -30,7 +30,7 @@ export default function Home() {
     <>
       <IdleController />
 
-      <main className={styles.page}>
+      <main className={styles.page} data-behind="opening gallery">
         <header id="about" className={styles.intro}>
           <div className={styles.introHead}>
             <h1 className={styles.name}>{PROFILE.name}</h1>
@@ -72,26 +72,19 @@ export default function Home() {
         </Section>
 
         <Section id="writing" title="Writing">
-          {POSTS.map(post => (
-            <details key={post.slug} id={post.slug} className={styles.post}>
-              <summary className={styles.postSummary}>
-                <span className={styles.postTitle}>
-                  <span className={styles.postMarker} aria-hidden>▸</span>
-                  {post.title}
-                </span>
-                <span className={styles.postDate}>{post.date}</span>
-              </summary>
-              <div className={styles.postContent}>
-                {post.hero && (
-                  <div className={styles.postHero}>
-                    <Image src={post.hero} alt="" fill sizes="(max-width: 640px) 100vw, 640px" />
-                  </div>
-                )}
-                {post.lede && <p className={styles.lede}>{post.lede}</p>}
-                {post.paragraphs.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
-              </div>
-            </details>
-          ))}
+          <ul className={styles.postList}>
+            {POSTS.map(post => (
+              <li key={post.slug} className={styles.post}>
+                <Link href={`/writing/${post.slug}`} className={styles.postRow}>
+                  <span className={styles.postTitle}>
+                    {post.title}
+                    <span className={styles.postMarker} aria-hidden>→</span>
+                  </span>
+                  <span className={styles.postDate}>{post.date}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </Section>
 
         <Section id="last-visitor" title="Last Visitor">

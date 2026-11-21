@@ -1,4 +1,4 @@
-// Blog posts, moved verbatim from app/page.tsx. Newest first.
+// Blog posts, newest first. Each one renders at /writing/[slug].
 
 export type Post = {
   slug: string;
@@ -9,7 +9,30 @@ export type Post = {
   paragraphs: string[];
 };
 
+export function getPost(slug: string): Post | undefined {
+  return POSTS.find(post => post.slug === slug);
+}
+
 export const POSTS: Post[] = [
+  {
+    slug: 'miguel-angel-asturias-came-home', date: '2026', title: 'Miguel Ángel Asturias Came Home',
+    paragraphs: [
+      'I recently found myself in Guatemala for a beautiful wedding. By pure coincidence, my trip lined up with the public wake of Miguel Ángel Asturias, our first Nobel laureate.',
+      'Earlier this year I stood in Père Lachaise Cemetery in Paris and left flowers for him. He is the only Central American to win the Nobel Prize in Literature, and he had rested in Paris for half a century, a long way from the country he spent his life writing about. A few months later I was walking through the Palacio Nacional and there he was again. Same man. New address. His ashes had finally come home in an urn shaped like a kernel of corn, a nod to Men of Maize and the cornfields that cover Maya country.',
+      'Around me were elderly Indigenous men and women standing very still, staring at the urn. I kept wondering what they saw. A Nobel laureate? A man who wrote their grandparents into literature? Or the loved ones they never got to bury? Because the government murdered them.',
+      'I will be honest. I didn’t know how to feel. So I did what any serious literary pilgrim would do and stepped outside for a cigarette.',
+      'You cannot stand in front of Asturias without remembering what he stood for. He wrote El Señor Presidente about a dictator who ruled through fear, a man who decided who counted as a person and who did not. He wrote about dehumanization, tyranny and absolute power, and he paid for it with years in exile. Asturias loved Guatemala. He also knew exactly what was wrong with it and was never afraid to call out its hypocrisy.',
+      'Outside, a taxi driver named Mario offered me a lighter. We talked about why I was in Guatemala and then about where we had each been. He told me he has only left Guatemala twice. The first time was for Colombia, to watch his son play soccer. The second time was El Salvador. Not once had he wanted to go north. My family is from Huehuetenango, where so many men grow up seeing the journey to the US as the only way forward, so that stuck with me.',
+      'I asked what he was doing in El Salvador.',
+      'Mario told me, in detail I will not forget, that he was arrested under the state of exception the Bukele government declared in 2022, with no due process and no formal charge. The same border agents who arrested him warned him that the judge did not like Guatemalans. They were right. The judge admitted there was no legal ground for the case and sentenced him to 30 years and 6 months anyway.',
+      'For three years Mario had no lawyer and no way to reach his wife and young children. Mario is a big man. He showed me photos from the day he was released, 95 pounds with his ribs showing. What he worried about most was the men he left behind, men facing 20, 30 and 40 years who may never see their cases move or their children grow up.',
+      'I felt small standing next to him.',
+      'He did not tell it like a speech. He told it like a fact, the way you tell someone the bus is running late.',
+      'I keep thinking about the distance between those two moments. Inside, a country honoring a man who warned it about absolute power. Outside, a man holding a lighter who had lived the warning.',
+      'Seeing Miguel Ángel Asturias finally rest in Guatemala was one of the great honors of my life. But I do not think he came home to be admired. I think he came home to be read. The themes of El Señor Presidente never left Central America, and I do not think they will in my lifetime.',
+      'If Miguel is watching, I do not think he would be surprised. I think he would ask what we plan to do about it. I hope we find a better answer than I had standing outside with a cigarette.',
+    ],
+  },
   {
     slug: 'my-favorite-movie-y-tu-mama-tambien', date: '2026', title: 'My Favorite Movie: Y Tu Mamá También',
     hero: '/blog/y-tu-mama-tambien.jpg',

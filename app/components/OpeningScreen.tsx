@@ -7,8 +7,11 @@ import {
   getOpeningSeen,
   getOpeningSeenOnServer,
   markOpeningSeen,
+  OPENING_LEAVING_CLASS,
   subscribeOpeningSeen,
 } from '@/app/lib/openingSeen';
+import { paintingAlt, paintingImageStyle } from '@/app/lib/framing';
+import { holdInert } from '@/app/lib/inertBackground';
 import { nudgePlayback, startOpener, stopMusic } from '@/app/lib/music';
 import styles from './OpeningScreen.module.css';
 
@@ -31,13 +34,18 @@ export default function OpeningScreen({ onIdle }: { onIdle: () => void }) {
     return () => window.removeEventListener('keydown', onFirstKey);
   }, [seen]);
 
-  // Keep the page underneath from scrolling while the opening screen is up.
+  // Keep the page underneath from scrolling or taking keyboard focus while
+  // the opening screen is up.
   useEffect(() => {
     if (seen) return;
     const html = document.documentElement;
     const previous = html.style.overflow;
     html.style.overflow = 'hidden';
-    return () => { html.style.overflow = previous; };
+    const release = holdInert('opening');
+    return () => {
+      html.style.overflow = previous;
+      release();
+    };
   }, [seen]);
 
   if (seen) return null;
@@ -45,17 +53,18 @@ export default function OpeningScreen({ onIdle }: { onIdle: () => void }) {
   const enter = () => {
     if (leaving) return;
     stopMusic();
+    document.documentElement.classList.add(OPENING_LEAVING_CLASS);
     setLeaving(true);
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     window.setTimeout(markOpeningSeen, reduced ? 0 : FADE_MS);
   };
 
   const p = OPENER.painting;
-  const origin = `${p.focalX * 100}% ${p.focalY * 100}%`;
 
   return (
     <div
       className={`${styles.screen} ${leaving ? styles.isLeaving : ''}`}
+      data-behind="gallery"
       onPointerDown={e => {
         // enter and idle have their own jobs; anywhere else starts the music.
         if (!(e.target instanceof Element && e.target.closest('button'))) nudgePlayback();
@@ -63,25 +72,20 @@ export default function OpeningScreen({ onIdle }: { onIdle: () => void }) {
     >
       <Image
         src={p.image}
-        alt={`${p.title} by ${p.artist}`}
+        alt={paintingAlt(p)}
         fill
         sizes="100vw"
         quality={85}
         preload
-        style={{
-          objectFit: 'cover',
-          objectPosition: origin,
-          transform: p.zoom === 1 ? undefined : `scale(${p.zoom})`,
-          transformOrigin: origin,
-        }}
+        style={paintingImageStyle(p)}
       />
       <div className={styles.scrim} aria-hidden />
       <p className={styles.name}>jared alonzo</p>
       <div className={styles.controls}>
-        <button type="button" className={styles.button} onClick={enter}>
+        <button type="button" className={styles.button} onClick={enter} aria-label="enter the site">
           enter
         </button>
-        <button type="button" className={styles.button} onClick={onIdle}>
+        <button type="button" className={styles.button} onClick={onIdle} aria-label="idle: open the painting gallery">
           idle
         </button>
       </div>

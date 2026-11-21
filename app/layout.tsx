@@ -2,9 +2,25 @@ import type { Metadata } from "next";
 import { DM_Mono, EB_Garamond } from "next/font/google";
 import "./globals.css";
 
+const description =
+  "Jared Alonzo (Chapis), a product manager and first-generation Guatemalan-American from Cincinnati, studying CS and Math at Ohio State.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL("https://chapis.me"),
   title: "Jared Alonzo",
-  description: "Jared Alonzo's personal site.",
+  description,
+  openGraph: {
+    title: "Jared Alonzo",
+    description,
+    url: "/",
+    siteName: "Jared Alonzo",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Jared Alonzo",
+    description,
+  },
 };
 
 const serif = EB_Garamond({ subsets: ["latin"], variable: "--font-serif", display: "swap" });

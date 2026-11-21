@@ -58,7 +58,7 @@ export default function IdleController() {
 
   return (
     <>
-      <IdleLink className={styles.cornerLink} />
+      <IdleLink className={styles.cornerLink} behind="opening gallery" />
       <OpeningScreen onIdle={openIdle} />
       {idleOpen && (
         <IdleGallery onExit={closeIdle} pinnedId={showTestPainting && !userOpened ? testPaintingId : null} />

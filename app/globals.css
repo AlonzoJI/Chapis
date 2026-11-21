@@ -36,6 +36,20 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Content behind the opening screen is not painted until "enter" is pressed.
+   It cannot be seen anyway, and this keeps it from counting as the page's
+   largest paint. app/layout.tsx adds opening-seen before first paint for
+   returning visitors; OpeningScreen adds opening-leaving when the fade starts. */
+html:not(.opening-seen):not(.opening-leaving) [data-behind~="opening"] {
+  visibility: hidden;
+}
+
+:where(a, button, summary, [tabindex]):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
 }
